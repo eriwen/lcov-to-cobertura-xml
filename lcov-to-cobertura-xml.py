@@ -151,7 +151,7 @@ def write_output(xml_output, output_path):
 
 if __name__ == '__main__':
 	parser = OptionParser()
-	parser.usage = 'lcov-to-cobertura-xml.py lcov-file.dat'
+	parser.usage = 'lcov-to-cobertura-xml.py lcov-file.dat [-b source/files/dir] [-e <exclude packages regex>] [-o output.file]'
 	parser.description = 'Converts JsTestDriver lcov output to cobertura-compatible XML'
 	parser.add_option('-b', '--base-dir', help='Directory where source files are located', action='store', dest='base_dir', default='.')
 	parser.add_option('-e', '--excludes', help='Comma-separated list of regexes of packages to exclude', action='append', dest='excludes', default=[])
