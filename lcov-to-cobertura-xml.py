@@ -31,7 +31,7 @@ def parse_lcov_file(lcov_path, options):
 					current_file_dict = current_package_dict['classes'][current_file]
 					current_file_dict['lines-total'] = current_file_lines_total
 					current_file_dict['lines-covered'] = current_file_lines_covered
-					current_file_dict['lines'] = current_file_lines
+					current_file_dict['lines'] = dict(current_file_lines)
 					coverage_data['summary']['lines-total'] += current_file_lines_total
 					coverage_data['summary']['lines-covered'] += current_file_lines_covered
 				pass
