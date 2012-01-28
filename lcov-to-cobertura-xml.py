@@ -110,7 +110,6 @@ def generate_cobertura_xml(coverage_data, options):
 	
 	packages = coverage_data['packages']
 	for package_name, package_data in packages.items():
-		# TODO: make more robust
 		skip = False
 		for exclude in options.excludes:
 			if re.match(exclude, package_name):
