@@ -8,14 +8,14 @@ determine build stability etc.
 
 ## Usage
 
-    python lcov-to-cobertura-xml.py lcov-file.dat [-b source/files/dir] [-e <exclude packages regex>] [-o output.file]'
+    python lcov-to-cobertura-xml.py lcov-file.dat
 
  - `-b/--base-dir` - (Optional) Directory where source files are located. Defaults to the current directory
  - `-e/--excludes` - (Optional) Comma-separated list of regexes of packages to exclude
  - `-o/--output` - (Optional) Path to store cobertura xml file. Defaults to ./coverage.xml
 
 ## Caveats
-This was originally intended to convert JsTestDriver coverage results, so it
+This was originally intended to convert [JsTestDriver](http://code.google.com/p/js-test-driver/) coverage results, so it
 may not work properly with all LCOV constructs. If you have any problems or
 suggestions, feel free to 
 [file an issue](https://github.com/eriwen/lcov-to-cobertura-xml/issues) 
