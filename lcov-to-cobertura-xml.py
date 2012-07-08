@@ -84,7 +84,7 @@ def parse_lcov_file(lcov_path, options):
 					current_file_lines[line_number] = { 'branch' : 'true', 'branch-conditions-total' : 0, 'branch-conditions-covered' : 0}
 				current_file_lines[line_number]['branch'] = 'true'
 				current_file_lines[line_number]['branch-conditions-total'] += 1
-				if int(branch_hits) > 0:
+				if branch_hits != '-' and int(branch_hits) > 0:
 					current_file_lines[line_number]['branch-conditions-covered'] += 1
 				
 			elif input_type == 'BRF':
