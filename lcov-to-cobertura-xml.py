@@ -67,7 +67,7 @@ def parse_lcov_file(lcov_path, options):
 				
 			elif input_type == 'DA':
 				(line_number, line_hits) = line_parts[-1].strip().split(',')
-                                line_number = int(line_number)
+				line_number = int(line_number)
 				if line_number not in current_file_lines:
 				        current_file_lines[line_number] = { 'branch' : 'false', 'branch-conditions-total' : 0, 'branch-conditions-covered' : 0}
 				current_file_lines[line_number]['hits'] = line_hits
@@ -76,22 +76,22 @@ def parse_lcov_file(lcov_path, options):
 				if int(line_hits) > 0:
 					current_file_lines_covered += 1
 				current_file_lines_total += 1
-
-                        elif input_type == 'BRDA':
-                                (line_number, block_number, branch_number, branch_hits) = line_parts[-1].strip().split(',')
-                                line_number = int(line_number)
-                                if line_number not in current_file_lines:
-				        current_file_lines[line_number] = { 'branch' : 'true', 'branch-conditions-total' : 0, 'branch-conditions-covered' : 0}
+			
+			elif input_type == 'BRDA':
+				(line_number, block_number, branch_number, branch_hits) = line_parts[-1].strip().split(',')
+				line_number = int(line_number)
+				if line_number not in current_file_lines:
+					current_file_lines[line_number] = { 'branch' : 'true', 'branch-conditions-total' : 0, 'branch-conditions-covered' : 0}
 				current_file_lines[line_number]['branch'] = 'true'
 				current_file_lines[line_number]['branch-conditions-total'] += 1
 				if int(branch_hits) > 0:
-				        current_file_lines[line_number]['branch-conditions-covered'] += 1
+					current_file_lines[line_number]['branch-conditions-covered'] += 1
 				
-                        elif input_type == 'BRF':
-                                current_file_branches_total = int(line_parts[1])
-                                
-                        elif input_type == 'BRH':
-                                current_file_branches_covered = int(line_parts[1])
+			elif input_type == 'BRF':
+				current_file_branches_total = int(line_parts[1])
+			
+			elif input_type == 'BRH':
+				current_file_branches_covered = int(line_parts[1])
 		
 		for package_name, package_data in coverage_data['packages'].items():
 			package_data['line-rate'] = compute_line_rate(package_data['lines-total'], package_data['lines-covered'])
@@ -164,10 +164,10 @@ def generate_cobertura_xml(coverage_data, options):
 				line_element.setAttribute('hits', str(class_data['lines'][line_number]['hits']))
 				line_element.setAttribute('number', str(line_number))
 				if class_data['lines'][line_number]['branch'] == 'true':
-				        total   = int(class_data['lines'][line_number]['branch-conditions-total'])
-				        covered = int(class_data['lines'][line_number]['branch-conditions-covered'])
-				        percentage = int((covered * 100.0) / total)
-				        line_element.setAttribute('condition-coverage', '{0}% ({1}/{2})'.format(percentage, covered, total))
+					total = int(class_data['lines'][line_number]['branch-conditions-total'])
+					covered = int(class_data['lines'][line_number]['branch-conditions-covered'])
+					percentage = int((covered * 100.0) / total)
+					line_element.setAttribute('condition-coverage', '{0}% ({1}/{2})'.format(percentage, covered, total))
 				lines_element.appendChild(line_element)
 				
 			class_element.appendChild(lines_element)
