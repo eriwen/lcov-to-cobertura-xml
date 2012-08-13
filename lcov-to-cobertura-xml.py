@@ -8,15 +8,15 @@ from optparse import OptionParser
 
 # Given a FILE lcov-file return appropriate data structure
 def parse_lcov_file(lcov_path, options):
-	'''Given a path to a file in lcov format, return a data structure 
+	'''Given a path to a file in lcov format, return a data structure
 	representing it that can be serialized in any logical format.'''
 	
 	if (os.path.isfile(lcov_path)):
-		coverage_data = {'packages': {}, 'summary': {'lines-total': 0, 'lines-covered': 0, 'branches-total' : 0, 'branches-covered' : 0}}
+		coverage_data = {'packages': {}, 'summary': {'lines-total': 0, 'lines-covered': 0, 'branches-total': 0, 'branches-covered': 0}}
 		current_package = None
 		current_file = None
 		current_file_lines_total = 0
-		current_file_lines_covered = 0		
+		current_file_lines_covered = 0
 		current_file_lines = {}
 		current_file_branches_total = 0
 		current_file_branches_covered = 0
@@ -55,8 +55,8 @@ def parse_lcov_file(lcov_path, options):
 				class_name = file_name.split(os.path.sep)[-1]
 				# TODO: exclude test files here
 				if package not in coverage_data['packages']:
-					coverage_data['packages'][package] = {'classes': {}, 'lines-total': 0, 'lines-covered': 0, 'branches-total' : 0, 'branches-covered' : 0}
-				coverage_data['packages'][package]['classes'][relative_file_name] = {'name': class_name, 'lines': {}, 'lines-total': 0, 'lines-covered': 0, 'branches-total' : 0, 'branches-covered' : 0}
+					coverage_data['packages'][package] = {'classes': {}, 'lines-total': 0, 'lines-covered': 0, 'branches-total': 0, 'branches-covered': 0}
+				coverage_data['packages'][package]['classes'][relative_file_name] = {'name': class_name, 'lines': {}, 'lines-total': 0, 'lines-covered': 0, 'branches-total': 0, 'branches-covered': 0}
 				current_package = package
 				current_file = relative_file_name
 				current_file_lines.clear()
@@ -69,7 +69,7 @@ def parse_lcov_file(lcov_path, options):
 				(line_number, line_hits) = line_parts[-1].strip().split(',')
 				line_number = int(line_number)
 				if line_number not in current_file_lines:
-				        current_file_lines[line_number] = { 'branch' : 'false', 'branch-conditions-total' : 0, 'branch-conditions-covered' : 0}
+				        current_file_lines[line_number] = {'branch': 'false', 'branch-conditions-total': 0, 'branch-conditions-covered': 0}
 				current_file_lines[line_number]['hits'] = line_hits
 				
 				# Increment lines total/covered for class and package
@@ -81,7 +81,7 @@ def parse_lcov_file(lcov_path, options):
 				(line_number, block_number, branch_number, branch_hits) = line_parts[-1].strip().split(',')
 				line_number = int(line_number)
 				if line_number not in current_file_lines:
-					current_file_lines[line_number] = { 'branch' : 'true', 'branch-conditions-total' : 0, 'branch-conditions-covered' : 0}
+					current_file_lines[line_number] = {'branch': 'true', 'branch-conditions-total': 0, 'branch-conditions-covered': 0, 'hits': 0}
 				current_file_lines[line_number]['branch'] = 'true'
 				current_file_lines[line_number]['branch-conditions-total'] += 1
 				if branch_hits != '-' and int(branch_hits) > 0:
