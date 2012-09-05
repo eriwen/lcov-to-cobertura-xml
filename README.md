@@ -18,7 +18,7 @@ python lcov_cobertura.py lcov-file.dat
  - `-o/--output` - (Optional) Path to store cobertura xml file. _Defaults to ./coverage.xml_
 
 ```bash
-python lcov_cobertura.py lcov-file.dat --base-dir src/dir -excludes test.lib -output output/cobertura.xml
+python lcov_cobertura.py lcov-file.dat --base-dir src/dir --excludes test.lib --output build/coverage.xml
 ```
 
 ## Usage as a Python module
@@ -28,12 +28,7 @@ You can install lcov_cobertura with [easy_install](http://peak.telecommunity.com
 sudo easy_install lcov_cobertura
 ```
 
-Then just use it in your terminal:
-```bash
-python -m lcov_cobertura lcov-file.dat
-```
-
-OR anywhere in your python:
+Then just use it anywhere in your python:
 ```python
 from lcov_cobertura import LcovCobertura
 
@@ -46,9 +41,9 @@ print cobertura_xml
 ## Contributions
 This project is made possible due to the efforts of these fine people:
 
-[Eric Wendelin](http://eriwen.com)
-[Björge Dijkstra](https://github.com/bjd)
-[Jon Schewe](http://mtu.net/~jpschewe)
+ - [Eric Wendelin](http://eriwen.com)
+ - [Björge Dijkstra](https://github.com/bjd)
+ - [Jon Schewe](http://mtu.net/~jpschewe)
 
 ## License
 
