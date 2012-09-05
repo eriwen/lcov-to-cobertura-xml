@@ -1,4 +1,4 @@
-# lcov to cobertura XML converter
+# lcov to cobertura XML converter [![Build Status](https://secure.travis-ci.org/eriwen/lcov-to-cobertura-xml.png)](http://travis-ci.org/eriwen/lcov-to-cobertura-xml)
 
 This project does as the name implies: it coverts code coverage report 
 files in [lcov](http://ltp.sourceforge.net/coverage/lcov.php) format to
