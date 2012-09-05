@@ -1,0 +1,4 @@
+recursive-include doc/html *
+prune doc/html/.doctrees/
+exclude doc/html/.buildinfo
+include LICENSE.txt
