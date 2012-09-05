@@ -8,7 +8,7 @@ determine build stability etc.
 
 ## Quick command-line usage
 
-[Grab it raw]() and run it with python:
+[Grab it raw](https://raw.github.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py) and run it with python:
 ```bash
 python lcov_cobertura.py lcov-file.dat
 ```
@@ -18,7 +18,7 @@ python lcov_cobertura.py lcov-file.dat
  - `-o/--output` - (Optional) Path to store cobertura xml file. _Defaults to ./coverage.xml_
 
 ```bash
-python lcov-to-cobertura-xml.py lcov-file.dat --base-dir src/dir -excludes test.lib -output output/cobertura.xml
+python lcov_cobertura.py lcov-file.dat --base-dir src/dir -excludes test.lib -output output/cobertura.xml
 ```
 
 ## Usage as a Python module
@@ -42,6 +42,13 @@ converter = LcovCobertura(LCOV_INPUT)
 cobertura_xml = converter.convert()
 print cobertura_xml
 ```
+
+## Contributions
+This project is made possible due to the efforts of these fine people:
+
+[Eric Wendelin](http://eriwen.com)
+[Björge Dijkstra](https://github.com/bjd)
+[Jon Schewe](http://mtu.net/~jpschewe)
 
 ## License
 
