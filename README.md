@@ -23,9 +23,9 @@ python lcov_cobertura.py lcov-file.dat --base-dir src/dir --excludes test.lib --
 
 ## Usage as a Python module
 
-You can install lcov_cobertura with [easy_install](http://peak.telecommunity.com/DevCenter/EasyInstall):
+You can install lcov_cobertura with [pip](http://pypi.python.org/pypi/pip):
 ```bash
-sudo easy_install lcov_cobertura
+pip install lcov_cobertura
 ```
 
 Then just use it anywhere in your python:

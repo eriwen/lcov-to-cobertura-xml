@@ -13,7 +13,7 @@ import re, sys, os, time
 from xml.dom import minidom
 from optparse import OptionParser
 
-VERSION = '1.0'
+VERSION = '1.1'
 __all__ = ['LcovCobertura']
 
 class LcovCobertura(object):
@@ -65,7 +65,7 @@ class LcovCobertura(object):
             'packages': {},
             'summary': {'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0},
-            'timestamp': str(int(time.time()))
+            'timestamp': "%i000" % int(time.time())
         }
         package = None
         current_file = None
@@ -90,12 +90,9 @@ class LcovCobertura(object):
                     file_dict['branches-total'] = file_branches_total
                     file_dict['branches-covered'] = file_branches_covered
                     coverage_data['summary']['lines-total'] += file_lines_total
-                    coverage_data['summary'][
-                    'lines-covered'] += file_lines_covered
-                    coverage_data['summary'][
-                    'branches-total'] += file_branches_total
-                    coverage_data['summary'][
-                    'branches-covered'] += file_branches_covered
+                    coverage_data['summary']['lines-covered'] += file_lines_covered
+                    coverage_data['summary']['branches-total'] += file_branches_total
+                    coverage_data['summary']['branches-covered'] += file_branches_covered
 
             line_parts = line.split(':')
             input_type = line_parts[0]
@@ -111,8 +108,7 @@ class LcovCobertura(object):
                         'classes': {}, 'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0
                     }
-                coverage_data['packages'][package]['classes'][
-                relative_file_name] = {
+                coverage_data['packages'][package]['classes'][relative_file_name] = {
                     'name': class_name, 'lines': {}, 'lines-total': 0,
                     'lines-covered': 0, 'branches-total': 0,
                     'branches-covered': 0
@@ -161,7 +157,7 @@ class LcovCobertura(object):
             del coverage_data['packages'][package]
 
         # Compute line coverage rates
-        for package_data in coverage_data['packages'].values():
+        for package_data in list(coverage_data['packages'].values()):
             package_data['line-rate'] = self._compute_line_rate(
                 package_data['lines-total'],
                 package_data['lines-covered'])
@@ -206,14 +202,14 @@ class LcovCobertura(object):
         packages_element = document.createElement('packages')
 
         packages = coverage_data['packages']
-        for package_name, package_data in packages.items():
+        for package_name, package_data in list(packages.items()):
             package_element = document.createElement('package')
             package_element.setAttribute('line-rate', package_data['line-rate'])
             package_element.setAttribute('branch-rate',
                                          package_data['branch-rate'])
             package_element.setAttribute('name', package_name)
             classes_element = document.createElement('classes')
-            for class_name, class_data in package_data['classes'].items():
+            for class_name, class_data in list(package_data['classes'].items()):
                 class_element = document.createElement('class')
                 class_element.setAttribute('branch-rate',
                                            self._compute_line_rate(
@@ -227,7 +223,7 @@ class LcovCobertura(object):
                                                class_data['lines-covered']))
                 class_element.setAttribute('name', class_data['name'])
                 lines_element = document.createElement('lines')
-                lines = class_data['lines'].keys()
+                lines = list(class_data['lines'].keys())
                 lines.sort()
                 for line_number in lines:
                     line_element = document.createElement('line')
@@ -238,10 +234,8 @@ class LcovCobertura(object):
                         class_data['lines'][line_number]['hits']))
                     line_element.setAttribute('number', str(line_number))
                     if class_data['lines'][line_number]['branch'] == 'true':
-                        total = int(class_data['lines'][line_number][
-                                    'branch-conditions-total'])
-                        covered = int(class_data['lines'][line_number][
-                                      'branch-conditions-covered'])
+                        total = int(class_data['lines'][line_number]['branch-conditions-total'])
+                        covered = int(class_data['lines'][line_number]['branch-conditions-covered'])
                         percentage = int((covered * 100.0) / total)
                         line_element.setAttribute('condition-coverage',
                                                   '{0}% ({1}/{2})'.format(
@@ -276,14 +270,15 @@ if __name__ == '__main__':
         Converts LCOV coverage data to Cobertura-compatible XML for reporting.
 
         Usage:
-            lcov-to-cobertura-xml.py lcov-file.dat
-            lcov-to-cobertura-xml.py lcov-file.dat --base-dir src/dir -excludes test.lib -output output/cobertura.xml
+            lcov_cobertura.py lcov-file.dat
+            lcov_cobertura.py lcov-file.dat --base-dir src/dir \
+                --excludes test.lib --output output/cobertura.xml
 
         By default, XML output will be written to ./coverage.xml
         """
 
         parser = OptionParser()
-        parser.usage = 'lcov-to-cobertura-xml.py lcov-file.dat [-b source/files/dir] [-e <exclude packages regex>] [-o output.file]'
+        parser.usage = 'lcov_cobertura.py lcov-file.dat [-b source/files/dir] [-e <exclude packages regex>] [-o output.file]'
         parser.description = 'Converts lcov output to cobertura-compatible XML'
         parser.add_option('-b', '--base-dir', action='store',
                           help='Directory where source files are located',
@@ -298,7 +293,7 @@ if __name__ == '__main__':
         (options, args) = parser.parse_args(args=argv)
 
         if len(argv) != 2:
-            print main.__doc__
+            print((main.__doc__))
             sys.exit(1)
 
         try:
@@ -306,9 +301,8 @@ if __name__ == '__main__':
                 lcov_data = lcov_file.read()
                 lcov_cobertura = LcovCobertura(lcov_data, options)
                 cobertura_xml = lcov_cobertura.convert()
-            output_file = open(options.output, 'w')
-            print >> output_file, cobertura_xml
-            output_file.close()
+            with open(options.output, mode='wt') as output_file:
+                output_file.write(cobertura_xml)
         except IOError:
             sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
 
