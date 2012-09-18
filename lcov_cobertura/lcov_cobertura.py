@@ -65,7 +65,7 @@ class LcovCobertura(object):
             'packages': {},
             'summary': {'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0},
-            'timestamp': "%i000" % int(time.time())
+            'timestamp': str(int(time.time()))
         }
         package = None
         current_file = None
@@ -90,9 +90,12 @@ class LcovCobertura(object):
                     file_dict['branches-total'] = file_branches_total
                     file_dict['branches-covered'] = file_branches_covered
                     coverage_data['summary']['lines-total'] += file_lines_total
-                    coverage_data['summary']['lines-covered'] += file_lines_covered
-                    coverage_data['summary']['branches-total'] += file_branches_total
-                    coverage_data['summary']['branches-covered'] += file_branches_covered
+                    coverage_data['summary'][
+                    'lines-covered'] += file_lines_covered
+                    coverage_data['summary'][
+                    'branches-total'] += file_branches_total
+                    coverage_data['summary'][
+                    'branches-covered'] += file_branches_covered
 
             line_parts = line.split(':')
             input_type = line_parts[0]
@@ -108,7 +111,8 @@ class LcovCobertura(object):
                         'classes': {}, 'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0
                     }
-                coverage_data['packages'][package]['classes'][relative_file_name] = {
+                coverage_data['packages'][package]['classes'][
+                relative_file_name] = {
                     'name': class_name, 'lines': {}, 'lines-total': 0,
                     'lines-covered': 0, 'branches-total': 0,
                     'branches-covered': 0
@@ -158,10 +162,10 @@ class LcovCobertura(object):
 
         # Compute line coverage rates
         for package_data in list(coverage_data['packages'].values()):
-            package_data['line-rate'] = self._compute_line_rate(
+            package_data['line-rate'] = self._percent(
                 package_data['lines-total'],
                 package_data['lines-covered'])
-            package_data['branch-rate'] = self._compute_line_rate(
+            package_data['branch-rate'] = self._percent(
                 package_data['branches-total'],
                 package_data['branches-covered'])
 
@@ -180,77 +184,95 @@ class LcovCobertura(object):
                                               "http://cobertura.sourceforge.net/xml/coverage-03.dtd")
         document = dom_impl.createDocument(None, "coverage", doctype)
         root = document.documentElement
-
         summary = coverage_data['summary']
+        self._attrs(root, {
+            'branch-rate': self._percent(summary['branches-total'],
+                                         summary['branches-covered']),
+            'branches-covered': str(summary['branches-covered']),
+            'branches-valid': str(summary['branches-total']),
+            'complexity': '0',
+            'line-rate': self._percent(summary['lines-total'],
+                                       summary['lines-covered']),
+            'lines-valid': str(summary['lines-total']),
+            'timestamp': coverage_data['timestamp'],
+            'version': '1.9'
+        })
 
-        root.setAttribute('branch-rate',
-                          self._compute_line_rate(summary['branches-total'],
-                                                  summary['branches-covered']))
-        root.setAttribute('branches-covered', str(summary['branches-covered']))
-        root.setAttribute('branches-valid', str(summary['branches-total']))
-        root.setAttribute('complexity', '0')
-        root.setAttribute('line-rate',
-                          self._compute_line_rate(summary['lines-total'],
-                                                  summary['lines-covered']))
-        root.setAttribute('lines-valid', str(summary['lines-total']))
-        root.setAttribute('timestamp', coverage_data['timestamp'])
-        root.setAttribute('version', '1.9')
-
-        sources = document.createElement('sources')
+        sources = self._el(document, 'sources', {})
         root.appendChild(sources)
 
-        packages_element = document.createElement('packages')
+        packages_el = self._el(document, 'packages', {})
 
         packages = coverage_data['packages']
-        for package_name, package_data in list(packages.items()):
-            package_element = document.createElement('package')
-            package_element.setAttribute('line-rate', package_data['line-rate'])
-            package_element.setAttribute('branch-rate',
-                                         package_data['branch-rate'])
-            package_element.setAttribute('name', package_name)
-            classes_element = document.createElement('classes')
-            for class_name, class_data in list(package_data['classes'].items()):
-                class_element = document.createElement('class')
-                class_element.setAttribute('branch-rate',
-                                           self._compute_line_rate(
-                                               class_data['branches-total'],
-                                               class_data['branches-covered']))
-                class_element.setAttribute('complexity', '0')
-                class_element.setAttribute('filename', class_name)
-                class_element.setAttribute('line-rate',
-                                           self._compute_line_rate(
-                                               class_data['lines-total'],
-                                               class_data['lines-covered']))
-                class_element.setAttribute('name', class_data['name'])
-                lines_element = document.createElement('lines')
-                lines = list(class_data['lines'].keys())
+        for package_name, package_data in packages.items():
+            package_el = self._el(document, 'package', {
+                'line-rate': package_data['line-rate'],
+                'branch-rate': package_data['branch-rate'],
+                'name': package_name
+            })
+            classes_el = self._el(document, 'classes', {})
+            for class_name, class_data in package_data['classes'].items():
+                class_el = self._el(document, 'class', {
+                    'branch-rate': self._percent(class_data['branches-total'],
+                                                 class_data['branches-covered']),
+                    'complexity': '0',
+                    'filename': class_name,
+                    'line-rate': self._percent(class_data['lines-total'],
+                                               class_data['lines-covered']),
+                    'name': class_data['name']
+                })
+                lines_el = self._el(document, 'lines', {})
+                lines = class_data['lines'].keys()
                 lines.sort()
                 for line_number in lines:
-                    line_element = document.createElement('line')
-                    line_element.setAttribute('branch',
-                                              class_data['lines'][line_number][
-                                              'branch'])
-                    line_element.setAttribute('hits', str(
-                        class_data['lines'][line_number]['hits']))
-                    line_element.setAttribute('number', str(line_number))
+                    line_el = self._el(document, 'line', {
+                        'branch': class_data['lines'][line_number]['branch'],
+                        'hits': str(class_data['lines'][line_number]['hits']),
+                        'number': str(line_number)
+                    })
                     if class_data['lines'][line_number]['branch'] == 'true':
                         total = int(class_data['lines'][line_number]['branch-conditions-total'])
                         covered = int(class_data['lines'][line_number]['branch-conditions-covered'])
                         percentage = int((covered * 100.0) / total)
-                        line_element.setAttribute('condition-coverage',
-                                                  '{0}% ({1}/{2})'.format(
-                                                      percentage, covered,
-                                                      total))
-                    lines_element.appendChild(line_element)
-                class_element.appendChild(lines_element)
-                classes_element.appendChild(class_element)
-            package_element.appendChild(classes_element)
-            packages_element.appendChild(package_element)
-        root.appendChild(packages_element)
+                        line_el.setAttribute('condition-coverage',
+                                             '{0}% ({1}/{2})'.format(
+                                                 percentage, covered, total))
+                    lines_el.appendChild(line_el)
+                class_el.appendChild(lines_el)
+                classes_el.appendChild(class_el)
+            package_el.appendChild(classes_el)
+            packages_el.appendChild(package_el)
+        root.appendChild(packages_el)
 
         return document.toprettyxml()
 
-    def _compute_line_rate(self, lines_total, lines_covered):
+    def _el(self, document, name, attrs):
+        """
+        Create an element within document with given name and attributes.
+
+        :param document: Document element
+        :type document: Document
+        :param name: Element name
+        :type name: string
+        :param attrs: Attributes for element
+        :type attrs: dict
+        """
+        return self._attrs(document.createElement(name), attrs)
+
+    def _attrs(self, element, attrs):
+        """
+        Set attributes on given element.
+
+        :param element: DOM Element
+        :type element: Element
+        :param attrs: Attributes for element
+        :type attrs: dict
+        """
+        for attr, val in attrs.items():
+            element.setAttribute(attr, val)
+        return element
+
+    def _percent(self, lines_total, lines_covered):
         """
         Get the percentage of lines covered in the total, with formatting.
 
@@ -278,7 +300,7 @@ if __name__ == '__main__':
         """
 
         parser = OptionParser()
-        parser.usage = 'lcov_cobertura.py lcov-file.dat [-b source/files/dir] [-e <exclude packages regex>] [-o output.file]'
+        parser.usage = 'lcov_cobertura.py lcov-file.dat [-b source/dir] [-e <exclude packages regex>] [-o output.xml]'
         parser.description = 'Converts lcov output to cobertura-compatible XML'
         parser.add_option('-b', '--base-dir', action='store',
                           help='Directory where source files are located',
