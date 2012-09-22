@@ -14,15 +14,18 @@ class Test(unittest.TestCase):
 
     def test_parse(self):
         converter = LcovCobertura(
-            'SF:foo/file.ext\nDA:1,1\nDA:2,0\nend_of_record\n')
+            'SF:foo/file.ext\nDA:1,1\nDA:2,0\nBRDA:1,1,1,1\nBRDA:1,1,2,0\nend_of_record\n')
         result = converter.parse()
         self.assertTrue('packages' in result)
         self.assertTrue('foo' in result['packages'])
-        self.assertEqual(result['packages']['foo']['branches-covered'], 0)
-        self.assertEqual(result['packages']['foo']['branches-total'], 0)
+        self.assertEqual(result['packages']['foo']['branches-covered'], 1)
+        self.assertEqual(result['packages']['foo']['branches-total'], 2)
+        self.assertEqual(result['packages']['foo']['branch-rate'], '0.5')
         self.assertEqual(result['packages']['foo']['line-rate'], '0.5')
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
         self.assertEqual(result['packages']['foo']['lines-total'], 2)
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['branches-covered'], 1)
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['branches-total'], 2)
 
     def test_exclude_package_from_parser(self):
         converter = LcovCobertura(
@@ -37,25 +40,25 @@ class Test(unittest.TestCase):
 
     def test_generate_cobertura_xml(self):
         converter = LcovCobertura(
-            'SF:foo/file.ext\nDA:1,1\nDA:2,0\nend_of_record\n')
+            'SF:foo/file.ext\nDA:1,1\nDA:2,0\nBRDA:1,1,1,1\nBRDA:1,1,2,0\nend_of_record\n')
         parsed_lcov = {'packages': {
-            'foo': {'branches-covered': 0, 'line-rate': '0.5',
-                    'lines-covered': 1, 'branches-total': 0, 'lines-total': 2,
+            'foo': {'branches-covered': 1, 'line-rate': '0.5', 'branch-rate': '0.5',
+                    'lines-covered': 1, 'branches-total': 2, 'lines-total': 2,
                     'classes': {
-                    'Bar': {'branches-covered': 0, 'lines-covered': 1,
-                            'branches-total': 0, 'lines': {
-                        1: {'hits': '1', 'branch-conditions-covered': 0,
-                            'branch-conditions-total': 0, 'branch': 'false'},
-                        2: {'hits': '0', 'branch-conditions-covered': 0,
-                            'branch-conditions-total': 0, 'branch': 'false'}},
+                    'Bar': {'branches-covered': 1, 'lines-covered': 1,
+                            'branches-total': 2, 'lines': {
+                        1: {'hits': '1', 'branches-covered': 1,
+                            'branches-total': 2, 'branch': 'true'},
+                        2: {'hits': '0', 'branches-covered': 0,
+                            'branches-total': 0, 'branch': 'false'}},
                             'lines-total': 2, 'name': 'file.ext'}},
-                    'branch-rate': '0.0'}},
-                       'summary': {'branches-covered': 0, 'branches-total': 0,
+                    }},
+                       'summary': {'branches-covered': 1, 'branches-total': 2,
                                    'lines-covered': 1, 'lines-total': 2},
                        'timestamp': '1346815648000'}
         xml = converter.generate_cobertura_xml(parsed_lcov)
         self.assertEqual(xml,
-                         '<?xml version="1.0" ?>\n<!DOCTYPE coverage\n  SYSTEM \'http://cobertura.sourceforge.net/xml/coverage-03.dtd\'>\n<coverage branch-rate="0.0" branches-covered="0" branches-valid="0" complexity="0" line-rate="0.5" lines-valid="2" timestamp="1346815648000" version="1.9">\n\t<sources/>\n\t<packages>\n\t\t<package branch-rate="0.0" line-rate="0.5" name="foo">\n\t\t\t<classes>\n\t\t\t\t<class branch-rate="0.0" complexity="0" filename="Bar" line-rate="0.5" name="file.ext">\n\t\t\t\t\t<lines>\n\t\t\t\t\t\t<line branch="false" hits="1" number="1"/>\n\t\t\t\t\t\t<line branch="false" hits="0" number="2"/>\n\t\t\t\t\t</lines>\n\t\t\t\t</class>\n\t\t\t</classes>\n\t\t</package>\n\t</packages>\n</coverage>\n')
+                         '<?xml version="1.0" ?>\n<!DOCTYPE coverage\n  SYSTEM \'http://cobertura.sourceforge.net/xml/coverage-03.dtd\'>\n<coverage branch-rate="0.5" branches-covered="1" branches-valid="2" complexity="0" line-rate="0.5" lines-valid="2" timestamp="1346815648000" version="1.9">\n\t<sources/>\n\t<packages>\n\t\t<package branch-rate="0.5" line-rate="0.5" name="foo">\n\t\t\t<classes>\n\t\t\t\t<class branch-rate="0.5" complexity="0" filename="Bar" line-rate="0.5" name="file.ext">\n\t\t\t\t\t<lines>\n\t\t\t\t\t\t<line branch="true" condition-coverage="50% (1/2)" hits="1" number="1"/>\n\t\t\t\t\t\t<line branch="false" hits="0" number="2"/>\n\t\t\t\t\t</lines>\n\t\t\t\t</class>\n\t\t\t</classes>\n\t\t</package>\n\t</packages>\n</coverage>\n')
 
 if __name__ == '__main__':
     unittest.main()

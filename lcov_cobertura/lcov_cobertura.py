@@ -90,12 +90,9 @@ class LcovCobertura(object):
                     file_dict['branches-total'] = file_branches_total
                     file_dict['branches-covered'] = file_branches_covered
                     coverage_data['summary']['lines-total'] += file_lines_total
-                    coverage_data['summary'][
-                    'lines-covered'] += file_lines_covered
-                    coverage_data['summary'][
-                    'branches-total'] += file_branches_total
-                    coverage_data['summary'][
-                    'branches-covered'] += file_branches_covered
+                    coverage_data['summary']['lines-covered'] += file_lines_covered
+                    coverage_data['summary']['branches-total'] += file_branches_total
+                    coverage_data['summary']['branches-covered'] += file_branches_covered
 
             line_parts = line.split(':')
             input_type = line_parts[0]
@@ -129,8 +126,8 @@ class LcovCobertura(object):
                 line_number = int(line_number)
                 if line_number not in file_lines:
                     file_lines[line_number] = {
-                        'branch': 'false', 'branch-conditions-total': 0,
-                        'branch-conditions-covered': 0
+                        'branch': 'false', 'branches-total': 0,
+                        'branches-covered': 0
                     }
                 file_lines[line_number]['hits'] = line_hits
                 # Increment lines total/covered for class and package
@@ -142,17 +139,25 @@ class LcovCobertura(object):
                 line_number = int(line_number)
                 if line_number not in file_lines:
                     file_lines[line_number] = {
-                        'branch': 'true', 'branch-conditions-total': 0,
-                        'branch-conditions-covered': 0, 'hits': 0
+                        'branch': 'true', 'branches-total': 0,
+                        'branches-covered': 0, 'hits': 0
                     }
                 file_lines[line_number]['branch'] = 'true'
-                file_lines[line_number]['branch-conditions-total'] += 1
+                file_lines[line_number]['branches-total'] += 1
+                file_branches_total += 1
                 if branch_hits != '-' and int(branch_hits) > 0:
-                    file_lines[line_number]['branch-conditions-covered'] += 1
+                    file_lines[line_number]['branches-covered'] += 1
+                    file_branches_covered += 1
             elif input_type == 'BRF':
                 file_branches_total = int(line_parts[1])
             elif input_type == 'BRH':
                 file_branches_covered = int(line_parts[1])
+            elif input_type == 'FN':
+                # FN:5,(anonymous_1)
+                (line_number, function_name) = line_parts[-1].strip().split(',')
+            elif input_type == 'FNDA':
+                # FNDA:0,(anonymous_1)
+                (function_hits, function_name) = line_parts[-1].strip().split(',')
 
         # Exclude packages
         excluded = [x for x in coverage_data['packages'] for e in self.excludes
@@ -204,14 +209,14 @@ class LcovCobertura(object):
         packages_el = self._el(document, 'packages', {})
 
         packages = coverage_data['packages']
-        for package_name, package_data in packages.items():
+        for package_name, package_data in list(packages.items()):
             package_el = self._el(document, 'package', {
                 'line-rate': package_data['line-rate'],
                 'branch-rate': package_data['branch-rate'],
                 'name': package_name
             })
             classes_el = self._el(document, 'classes', {})
-            for class_name, class_data in package_data['classes'].items():
+            for class_name, class_data in list(package_data['classes'].items()):
                 class_el = self._el(document, 'class', {
                     'branch-rate': self._percent(class_data['branches-total'],
                                                  class_data['branches-covered']),
@@ -222,7 +227,7 @@ class LcovCobertura(object):
                     'name': class_data['name']
                 })
                 lines_el = self._el(document, 'lines', {})
-                lines = class_data['lines'].keys()
+                lines = list(class_data['lines'].keys())
                 lines.sort()
                 for line_number in lines:
                     line_el = self._el(document, 'line', {
@@ -231,8 +236,8 @@ class LcovCobertura(object):
                         'number': str(line_number)
                     })
                     if class_data['lines'][line_number]['branch'] == 'true':
-                        total = int(class_data['lines'][line_number]['branch-conditions-total'])
-                        covered = int(class_data['lines'][line_number]['branch-conditions-covered'])
+                        total = int(class_data['lines'][line_number]['branches-total'])
+                        covered = int(class_data['lines'][line_number]['branches-covered'])
                         percentage = int((covered * 100.0) / total)
                         line_el.setAttribute('condition-coverage',
                                              '{0}% ({1}/{2})'.format(
@@ -268,7 +273,7 @@ class LcovCobertura(object):
         :param attrs: Attributes for element
         :type attrs: dict
         """
-        for attr, val in attrs.items():
+        for attr, val in list(attrs.items()):
             element.setAttribute(attr, val)
         return element
 
