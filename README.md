@@ -46,5 +46,6 @@ This project is made possible due to the efforts of these fine people:
  - [Jon Schewe](http://mtu.net/~jpschewe)
 
 ## License
-
 This project is provided under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+I provide this software free of charge. If you find it helpful, please endorse me on coderwall: [![endorse](http://api.coderwall.com/eriwen/endorsecount.png)](http://coderwall.com/eriwen)
