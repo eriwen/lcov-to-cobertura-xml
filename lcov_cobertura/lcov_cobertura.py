@@ -13,7 +13,7 @@ import re, sys, os, time
 from xml.dom import minidom
 from optparse import OptionParser
 
-VERSION = '1.1'
+VERSION = '1.1.1'
 __all__ = ['LcovCobertura']
 
 class LcovCobertura(object):
@@ -298,8 +298,7 @@ if __name__ == '__main__':
 
         Usage:
             lcov_cobertura.py lcov-file.dat
-            lcov_cobertura.py lcov-file.dat --base-dir src/dir \
-                --excludes test.lib --output output/cobertura.xml
+            lcov_cobertura.py lcov-file.dat -b src/dir -e test.lib -o path/out.xml
 
         By default, XML output will be written to ./coverage.xml
         """
@@ -315,18 +314,17 @@ if __name__ == '__main__':
                           action='append', dest='excludes', default=[])
         parser.add_option('-o', '--output',
                           help='Path to store cobertura xml file',
-                          action='store',
-                          dest='output', default='coverage.xml')
+                          action='store', dest='output', default='coverage.xml')
         (options, args) = parser.parse_args(args=argv)
 
-        if len(argv) != 2:
+        if len(args) != 2:
             print((main.__doc__))
             sys.exit(1)
 
         try:
             with open(args[1], 'r') as lcov_file:
                 lcov_data = lcov_file.read()
-                lcov_cobertura = LcovCobertura(lcov_data, options)
+                lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes)
                 cobertura_xml = lcov_cobertura.convert()
             with open(options.output, mode='wt') as output_file:
                 output_file.write(cobertura_xml)
