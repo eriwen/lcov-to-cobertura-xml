@@ -12,7 +12,7 @@ sys.path.append('lcov_cobertura')
 import lcov_cobertura
 
 setup(name='lcov_cobertura',
-    version='1.1.1',
+    version='1.2',
     description='LCOV to Cobertura XML converter',
     author='Eric Wendelin',
     author_email='me@eriwen.com',
@@ -27,6 +27,7 @@ setup(name='lcov_cobertura',
                  'Natural Language :: English',
                  'Operating System :: OS Independent',
                  'Programming Language :: Python :: 2',
+                 'Programming Language :: Python :: 3',
                  'License :: OSI Approved :: Apache Software License',
                  'Topic :: Software Development :: Testing',
                  'Topic :: Software Development :: Quality Assurance'

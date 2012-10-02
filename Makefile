@@ -10,8 +10,7 @@ release: clean doc $(SRCDIR)/*.py test/*.py
 
 pypi: doc
 	$(PYTHON) setup.py sdist upload
-	@#$(PYTHON) setup.py bdist_wininst upload
-	@echo "Upload win32.exe to PyPI."
+	$(PYTHON) setup.py bdist_wininst upload
 
 doc:
 	cd doc; $(MAKE) html

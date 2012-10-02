@@ -13,7 +13,7 @@ import re, sys, os, time
 from xml.dom import minidom
 from optparse import OptionParser
 
-VERSION = '1.1.1'
+VERSION = '1.2'
 __all__ = ['LcovCobertura']
 
 class LcovCobertura(object):
@@ -72,6 +72,7 @@ class LcovCobertura(object):
         file_lines_total = 0
         file_lines_covered = 0
         file_lines = {}
+        file_methods = {}
         file_branches_total = 0
         file_branches_covered = 0
 
@@ -87,6 +88,7 @@ class LcovCobertura(object):
                     file_dict['lines-total'] = file_lines_total
                     file_dict['lines-covered'] = file_lines_covered
                     file_dict['lines'] = dict(file_lines)
+                    file_dict['methods'] = dict(file_methods)
                     file_dict['branches-total'] = file_branches_total
                     file_dict['branches-covered'] = file_branches_covered
                     coverage_data['summary']['lines-total'] += file_lines_total
@@ -116,12 +118,14 @@ class LcovCobertura(object):
                 }
                 package = package
                 current_file = relative_file_name
-                file_lines.clear()
                 file_lines_total = 0
                 file_lines_covered = 0
+                file_lines.clear()
+                file_methods.clear()
                 file_branches_total = 0
                 file_branches_covered = 0
             elif input_type == 'DA':
+                # DA:2,0
                 (line_number, line_hits) = line_parts[-1].strip().split(',')
                 line_number = int(line_number)
                 if line_number not in file_lines:
@@ -135,6 +139,7 @@ class LcovCobertura(object):
                     file_lines_covered += 1
                 file_lines_total += 1
             elif input_type == 'BRDA':
+                # BRDA:1,1,2,0
                 (line_number, block_number, branch_number, branch_hits) = line_parts[-1].strip().split(',')
                 line_number = int(line_number)
                 if line_number not in file_lines:
@@ -154,10 +159,12 @@ class LcovCobertura(object):
                 file_branches_covered = int(line_parts[1])
             elif input_type == 'FN':
                 # FN:5,(anonymous_1)
-                (line_number, function_name) = line_parts[-1].strip().split(',')
+                function_name = line_parts[-1].strip().split(',')[1]
+                file_methods[function_name] = '0'
             elif input_type == 'FNDA':
                 # FNDA:0,(anonymous_1)
                 (function_hits, function_name) = line_parts[-1].strip().split(',')
+                file_methods[function_name] = function_hits
 
         # Exclude packages
         excluded = [x for x in coverage_data['packages'] for e in self.excludes
@@ -226,6 +233,17 @@ class LcovCobertura(object):
                                                class_data['lines-covered']),
                     'name': class_data['name']
                 })
+
+                # Process methods
+                methods_el = self._el(document, 'methods', {})
+                for method_name, hits in list(class_data['methods'].items()):
+                    method_el = self._el(document, 'method', {
+                        'name': method_name,
+                        'hits': hits
+                    })
+                    methods_el.appendChild(method_el)
+
+                # Process lines
                 lines_el = self._el(document, 'lines', {})
                 lines = list(class_data['lines'].keys())
                 lines.sort()
@@ -243,6 +261,8 @@ class LcovCobertura(object):
                                              '{0}% ({1}/{2})'.format(
                                                  percentage, covered, total))
                     lines_el.appendChild(line_el)
+
+                class_el.appendChild(methods_el)
                 class_el.appendChild(lines_el)
                 classes_el.appendChild(class_el)
             package_el.appendChild(classes_el)
