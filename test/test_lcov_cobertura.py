@@ -30,7 +30,7 @@ class Test(unittest.TestCase):
 
     def test_parse_with_functions(self):
         converter = LcovCobertura(
-            'SF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,(anonymous_1)\nFN:2,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
+            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,(anonymous_1)\nFN:2,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
         result = converter.parse()
         self.assertEqual(result['packages']['foo']['line-rate'], '0.5')
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
 
     def test_generate_cobertura_xml(self):
         converter = LcovCobertura(
-            'SF:foo/file.ext\nDA:1,1\nDA:2,0\nBRDA:1,1,1,1\nBRDA:1,1,2,0\nFN:1,(anonymous_1)\nFN:2,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
+            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nBRDA:1,1,1,1\nBRDA:1,1,2,0\nFN:1,(anonymous_1)\nFN:2,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
         parsed_lcov = {'packages': {
             'foo': {'branches-covered': 1, 'line-rate': '0.5', 'branch-rate': '0.5',
                     'lines-covered': 1, 'branches-total': 2, 'lines-total': 2,
