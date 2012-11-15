@@ -13,7 +13,7 @@ import re, sys, os, time
 from xml.dom import minidom
 from optparse import OptionParser
 
-VERSION = '1.2'
+VERSION = '1.3'
 __all__ = ['LcovCobertura']
 
 class LcovCobertura(object):
