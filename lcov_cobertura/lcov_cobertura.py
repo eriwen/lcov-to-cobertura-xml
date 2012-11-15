@@ -239,6 +239,7 @@ class LcovCobertura(object):
                 for method_name, hits in list(class_data['methods'].items()):
                     method_el = self._el(document, 'method', {
                         'name': method_name,
+                        'signature' : '',
                         'hits': hits
                     })
                     methods_el.appendChild(method_el)
