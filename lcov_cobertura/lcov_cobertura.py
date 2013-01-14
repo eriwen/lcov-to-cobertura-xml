@@ -211,6 +211,10 @@ class LcovCobertura(object):
         })
 
         sources = self._el(document, 'sources', {})
+        source = self._el(document, 'source', {})
+        source.appendChild(document.createTextNode(self.base_dir))
+        sources.appendChild(source)
+
         root.appendChild(sources)
 
         packages_el = self._el(document, 'packages', {})
