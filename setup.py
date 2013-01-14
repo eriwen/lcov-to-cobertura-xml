@@ -12,7 +12,7 @@ sys.path.append('lcov_cobertura')
 import lcov_cobertura
 
 setup(name='lcov_cobertura',
-    version='1.3',
+    version='1.4',
     description='LCOV to Cobertura XML converter',
     author='Eric Wendelin',
     author_email='me@eriwen.com',
