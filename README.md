@@ -1,4 +1,4 @@
-# lcov to cobertura XML converter [![Build Status](https://secure.travis-ci.org/eriwen/lcov-to-cobertura-xml.png)](http://travis-ci.org/eriwen/lcov-to-cobertura-xml)
+# lcov to cobertura XML converter [![Build Status](https://secure.travis-ci.org/eriwen/lcov-to-cobertura-xml.png?branch=master)](http://travis-ci.org/eriwen/lcov-to-cobertura-xml)
 
 This project does as the name implies: it coverts code coverage report
 files in [lcov](http://ltp.sourceforge.net/coverage/lcov.php) format to
@@ -45,6 +45,11 @@ cobertura_xml = converter.convert()
 print cobertura_xml
 ```
 
+## Environment Support
+
+Python 2.6+ is supported (including Python 3). You can also use the *experimental* Jython 2.5 friendly 
+version in the [jython branch](https://github.com/eriwen/lcov-to-cobertura-xml/tree/jython).
+
 ## Contributions
 This project is made possible due to the efforts of these fine people:
 
@@ -55,4 +60,4 @@ This project is made possible due to the efforts of these fine people:
 ## License
 This project is provided under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
-I provide this software free of charge. If you find it helpful, please endorse me on coderwall: [![endorse](http://api.coderwall.com/eriwen/endorsecount.png)](http://coderwall.com/eriwen)
+I provide this software free of charge. If you find it helpful, please endorse me for Python on coderwall: [![endorse](http://api.coderwall.com/eriwen/endorsecount.png)](http://coderwall.com/eriwen)
