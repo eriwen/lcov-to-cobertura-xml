@@ -48,6 +48,21 @@ class LcovCobertura(object):
         self.base_dir = base_dir
         self.excludes = excludes
 
+    def relpath(self, path, start):
+        """
+        Return a relative version of a path
+        """
+        if not path:
+            raise ValueError("no path specified")
+        start_list = os.path.abspath(start).split(os.sep)
+        path_list = os.path.abspath(path).split(os.sep)
+        # Work out how much of the filepath is shared by start and path.
+        i = len(os.path.commonprefix([start_list, path_list]))
+        rel_list = [os.pardir] * (len(start_list)-i) + path_list[i:]
+        if not rel_list:
+            return start
+        return os.path.join(*rel_list)
+
     def convert(self):
         """
         Convert lcov file to cobertura XML using options from this instance.
@@ -102,7 +117,7 @@ class LcovCobertura(object):
             if input_type == 'SF':
                 # Get file name
                 file_name = line_parts[-1].strip()
-                relative_file_name = os.path.relpath(file_name, self.base_dir)
+                relative_file_name = self.relpath(file_name, self.base_dir)
                 package = '.'.join(relative_file_name.split(os.path.sep)[0:-1])
                 class_name = file_name.split(os.path.sep)[-1]
                 if package not in coverage_data['packages']:
@@ -346,14 +361,18 @@ if __name__ == '__main__':
             print((main.__doc__))
             sys.exit(1)
 
+        lcov_file = open(args[1], 'r')
         try:
-            with open(args[1], 'r') as lcov_file:
-                lcov_data = lcov_file.read()
-                lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes)
-                cobertura_xml = lcov_cobertura.convert()
-            with open(options.output, mode='wt') as output_file:
+            lcov_data = lcov_file.read()
+            lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes)
+            cobertura_xml = lcov_cobertura.convert()
+            output_file = open(options.output, mode='wt')
+            try:
                 output_file.write(cobertura_xml)
-        except IOError:
-            sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
+            finally:
+                output_file.close()
+        finally:
+            lcov_file.close()
+
 
     main(sys.argv)

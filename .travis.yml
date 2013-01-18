@@ -1,6 +1,16 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
   - "3.2"
-script: make clean test
+  - "jython"
+
+# Install jython if the python version is "jython"
+install:
+  - export JYTHON_URL='http://downloads.sourceforge.net/project/jython/jython/2.5.2/jython_installer-2.5.2.jar'
+  - if [ "$TRAVIS_PYTHON_VERSION" == "jython" ]; then wget $JYTHON_URL -O jython_installer.jar; java -jar jython_installer.jar -s -d $HOME/jython; export PATH=$HOME/jython:$PATH;jython --version; fi
+
+before_script:
+  - if [ "$TRAVIS_PYTHON_VERSION" == "jython" ]; then jython -c "print ''"; fi
+
+script:
+  - if [ "$TRAVIS_PYTHON_VERSION" == "jython" ]; then make -DPYTHON_EXECUTABLE="$(which jython)" clean test_jython ; else make clean test ; fi

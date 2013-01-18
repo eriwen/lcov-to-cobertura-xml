@@ -18,6 +18,9 @@ doc:
 test:
 	cd test; $(PYTHON) test_lcov_cobertura.py
 
+test_jython:
+	cd test; java -jar ${JYTHON_HOME}/jython.jar test_lcov_cobertura.py
+
 clean:
 	cd doc; $(MAKE) clean
 	rm -rf dist build
