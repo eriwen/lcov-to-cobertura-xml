@@ -96,7 +96,7 @@ class LcovCobertura(object):
                     coverage_data['summary']['branches-total'] += file_branches_total
                     coverage_data['summary']['branches-covered'] += file_branches_covered
 
-            line_parts = line.split(':')
+            line_parts = line.split(':',1)
             input_type = line_parts[0]
 
             if input_type == 'SF':
