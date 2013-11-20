@@ -26,7 +26,7 @@ class LcovCobertura(object):
     >>> LCOV_INPUT = 'your lcov input'
     >>> converter = LcovCobertura(LCOV_INPUT)
     >>> cobertura_xml = converter.convert()
-    >>> print cobertura_xml
+    >>> cobertura_xml
     """
 
     def __init__(self, lcov_data, base_dir='.', excludes=None):
@@ -96,7 +96,7 @@ class LcovCobertura(object):
                     coverage_data['summary']['branches-total'] += file_branches_total
                     coverage_data['summary']['branches-covered'] += file_branches_covered
 
-            line_parts = line.split(':',1)
+            line_parts = line.split(':')
             input_type = line_parts[0]
 
             if input_type == 'SF':
@@ -322,10 +322,15 @@ if __name__ == '__main__':
         Converts LCOV coverage data to Cobertura-compatible XML for reporting.
 
         Usage:
-            lcov_cobertura.py lcov-file.dat
-            lcov_cobertura.py lcov-file.dat -b src/dir -e test.lib -o path/out.xml
+            lcov_cobertura.py lcov-file.info
+            lcov_cobertura.py lcov-file.info -a srcPath:gcdaPath
+            lcov_cobertura.py -a srcPath:gcdaPath             
+            lcov_cobertura.py lcov-file.info -b src/dir -e test.lib -o path/out.xml
 
-        By default, XML output will be written to ./coverage.xml
+        By default, 
+        1. gcdaPath=gcnoPath=objsPath 
+        2. XML output will be written to ./coverage.xml
+        
         """
 
         parser = OptionParser()
@@ -337,23 +342,75 @@ if __name__ == '__main__':
         parser.add_option('-e', '--excludes',
                           help='Comma-separated list of regexes of packages to exclude',
                           action='append', dest='excludes', default=[])
+        parser.add_option('-a', '--srcdstPairs',
+                          help='add src:dst path, the src path is source code path, the dst path is gcda/gcno path',
+                          action='append', dest='srcdstPairs', default=[])
         parser.add_option('-o', '--output',
                           help='Path to store cobertura xml file',
                           action='store', dest='output', default='coverage.xml')
-        (options, args) = parser.parse_args(args=argv)
+        parser.add_option('-w', '--web', help='create html report',action='store_true', dest='isCreateWebHtml',default=False)
+        parser.add_option('-k', '--keep', help='keep the copied gcov data',action='store_true', dest='isKeepCopiedGcovData',default=False)
 
-        if len(args) != 2:
+        (options, args) = parser.parse_args(args=argv)
+ 
+        maxNumber = 0;
+        lcovInfoDic = {}
+        for srcdstPair in options.srcdstPairs:            
+                srcPath=srcdstPair.split(":")[0]
+                dstPath=srcdstPair.split(":")[1]
+                print ("[data][source code path]:"+srcPath)
+                print ("[data][gcda/gcno/objs path]:"+dstPath+"\n")
+                if srcPath!=dstPath:
+                    cp_command="cp -rf "+dstPath+"/* "+srcPath+"/"
+                    print ("[step]:copy gcda/gcno to src position\n"+cp_command+"\n")
+                    os.system(cp_command)
+                    
+                maxNumber+=1;
+                lcovInfoName=srcPath.replace("/","_")+".info"
+                lcovInfoDic[maxNumber]=lcovInfoName
+                lcov_command="lcov -c -q -d  "+srcPath+" -o "+lcovInfoName+" --no-external"
+                print ("[step]:lcov to lcov data:\n"+lcov_command+"\n")
+                os.system(lcov_command)
+                
+        if not options.isKeepCopiedGcovData:      
+                for srcdstPair in options.srcdstPairs:    
+                    srcPath=srcdstPair.split(":")[0]
+                    dstPath=srcdstPair.split(":")[1]
+                    if srcPath!=dstPath:        
+                        del_command="find "+srcPath+" -name \"*.gc*\"  | xargs rm -f"
+                        print ("[step][optional]:delete copied gcda/gcno\n"+del_command+"\n") 
+                        os.system(del_command)
+                
+        total_lcovdata=options.output.replace(".xml",".info")
+        if len(args) == 2 and maxNumber==0:
+            total_lcovdata=args[1];        
+        elif len(args) < 2 and maxNumber==0:
             print((main.__doc__))
             sys.exit(1)
+        elif maxNumber!=0:
+            lcov_merge_command = "lcov -q "
+            for i in range(1,maxNumber+1):
+                lcov_merge_command += " -a "+lcovInfoDic[i]
+            if len(args) == 2:
+                lcov_merge_command += " -a "+args[1]
+            lcov_merge_command +=" -o "+total_lcovdata
+            print ("[step]:merge all lcov data\n"+lcov_merge_command+"\n")
+            os.system(lcov_merge_command)
+           
+        if options.isCreateWebHtml:
+            genHtml_command="genhtml -o "+options.output.replace(".xml","")+" "+total_lcovdata;
+            print ("[step]:genhtml lcov data to html\n"+genHtml_command+"\n") 
+            os.system(genHtml_command)
 
         try:
-            with open(args[1], 'r') as lcov_file:
+            print ("[step]:convert lcov to cobertura xml:"+options.output+"\n")
+            with open(total_lcovdata, 'r') as lcov_file:
                 lcov_data = lcov_file.read()
                 lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes)
                 cobertura_xml = lcov_cobertura.convert()
             with open(options.output, mode='wt') as output_file:
                 output_file.write(cobertura_xml)
         except IOError:
-            sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
+                sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
 
     main(sys.argv)
