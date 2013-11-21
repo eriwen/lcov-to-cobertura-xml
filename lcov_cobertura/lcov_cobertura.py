@@ -6,7 +6,7 @@
 # available in the accompanying LICENSE.txt file.
 
 """
-Converts lcov line coverage output to Cobertura-compatible XML for CI
+Converts lcov line coverage output or gcov data to Cobertura-compatible XML for CI
 """
 
 import re, sys, os, time
@@ -317,15 +317,80 @@ class LcovCobertura(object):
         return str(float(float(lines_covered) / float(lines_total)))
 
 if __name__ == '__main__':
+
+    def copyGcovToSrcPathAndCreateLcovData(srcdstPairs):
+        appendLcovDataList = []
+        for srcdstPair in srcdstPairs:
+            srcPath = srcdstPair.split(":")[0]
+            dstPath = srcdstPair.split(":")[1]
+            print ("[data][source code path]:" + srcPath)
+            print ("[data][gcda/gcno/objs path]:" + dstPath + "\n")
+            if srcPath != dstPath:
+                cp_command = "cp -rf " + dstPath + "/* " + srcPath + "/"
+                print ("[step]:copy gcda/gcno to src position\n" + cp_command + "\n")
+                os.system(cp_command)
+            lcovDataName = srcPath.replace("/", "_") + ".info"
+            appendLcovDataList.append(lcovDataName)
+            lcov_command = "lcov -c -q -d  " + srcPath + " -o " + lcovDataName + " --no-external"
+            print ("[step]:lcov to lcov data:\n" + lcov_command + "\n")
+            os.system(lcov_command)    
+        return appendLcovDataList
+     
+
+    def deleteCopiedGcovData(srcdstPairs):
+        for srcdstPair in srcdstPairs:
+            srcPath = srcdstPair.split(":")[0]
+            dstPath = srcdstPair.split(":")[1]
+            if srcPath != dstPath:
+                del_command = "find " + srcPath + " -name \"*.gc*\"  | xargs rm -f"
+                print ("[step][optional]:delete copied gcda/gcno\n" + del_command + "\n")
+                os.system(del_command)
+
+
+    def createHtmlForLcov(totalLcovData,htmlFolder):
+        genHtml_command = "genhtml -o " + htmlFolder + " " + totalLcovData
+        print ("[step]:genhtml lcov data to html\n" + genHtml_command + "\n")
+        os.system(genHtml_command)
+
+
+    def mergeAllLcovDataToTotalOne(options, args, appendLcovDataList):
+        appendLcovDataListLen=len(appendLcovDataList)
+        totalLcovData = options.output.replace(".xml", ".info")
+        if len(args) == 2 and appendLcovDataListLen == 0:
+            totalLcovData = args[1]
+        if len(args) == 1 and appendLcovDataListLen == 1:
+            totalLcovData = appendLcovDataList[0]
+        elif appendLcovDataListLen != 0:
+            _mergeAllLcovDataToTotalOne(args,appendLcovDataList, totalLcovData)
+            
+        return totalLcovData    
+    
+    def _mergeAllLcovDataToTotalOne(args, appendLcovDataList, totalLcovData):
+        lcov_merge_command = "lcov -q "
+        for lcovData in appendLcovDataList:
+            lcov_merge_command += " -a " + lcovData
+        
+        if len(args) == 2:
+            lcov_merge_command += " -a " + args[1]
+        lcov_merge_command += " -o " + totalLcovData
+        print ("[step]:merge all lcov data\n" + lcov_merge_command + "\n")
+        os.system(lcov_merge_command)
+
+
     def main(argv):
         """
-        Converts LCOV coverage data to Cobertura-compatible XML for reporting.
+        Converts LCOV coverage data or Gcov data to Cobertura-compatible XML for reporting.
 
         Usage:
-            lcov_cobertura.py lcov-file.dat
-            lcov_cobertura.py lcov-file.dat -b src/dir -e test.lib -o path/out.xml
+            lcov_cobertura.py lcov-file.info
+            lcov_cobertura.py lcov-file.info -a srcPath:gcovPath
+            lcov_cobertura.py -a srcPath:gcdaPath             
+            lcov_cobertura.py lcov-file.info -b src/dir -e test.lib -o path/out.xml
 
-        By default, XML output will be written to ./coverage.xml
+        By default, 
+        1. gcovPath=gcdaPath=gcnoPath=objsPath 
+        2. XML output will be written to ./coverage.xml
+        
         """
 
         parser = OptionParser()
@@ -337,17 +402,36 @@ if __name__ == '__main__':
         parser.add_option('-e', '--excludes',
                           help='Comma-separated list of regexes of packages to exclude',
                           action='append', dest='excludes', default=[])
+        parser.add_option('-a', '--srcdstPairs',
+                          help='add src:dst path, the src path is source code path, the dst path is gcda/gcno path',
+                          action='append', dest='srcdstPairs', default=[])
         parser.add_option('-o', '--output',
                           help='Path to store cobertura xml file',
                           action='store', dest='output', default='coverage.xml')
-        (options, args) = parser.parse_args(args=argv)
+        parser.add_option('-w', '--web', help='create html report',action='store_true', dest='isCreateHtml',default=False)
+        parser.add_option('-k', '--keep', help='not delete the copied gcov data',action='store_true', dest='isKeepCopiedGcovData',default=False)
 
-        if len(args) != 2:
+        (options, args) = parser.parse_args(args=argv)
+        
+        if (len(args) < 2 and len(options.srcdstPairs)==0) or len(args)>2:
             print((main.__doc__))
             sys.exit(1)
+ 
+        srcdstPairs = options.srcdstPairs
+        appendLcovDataList = copyGcovToSrcPathAndCreateLcovData(srcdstPairs)
+                 
+        if not options.isKeepCopiedGcovData:      
+                deleteCopiedGcovData(srcdstPairs)
+                
+        totalLcovData = mergeAllLcovDataToTotalOne(options, args, appendLcovDataList)
+           
+        if options.isCreateHtml:
+            htmlFolder = options.output.replace(".xml", "")
+            createHtmlForLcov(totalLcovData,htmlFolder)
 
         try:
-            with open(args[1], 'r') as lcov_file:
+            print ("[step]:convert lcov ["+totalLcovData+"] to cobertura xml:"+options.output+"\n")
+            with open(totalLcovData, 'r') as lcov_file:
                 lcov_data = lcov_file.read()
                 lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes)
                 cobertura_xml = lcov_cobertura.convert()
