@@ -9,12 +9,16 @@
 Converts lcov line coverage output to Cobertura-compatible XML for CI
 """
 
-import re, sys, os, time
+import re
+import sys
+import os
+import time
 from xml.dom import minidom
 from optparse import OptionParser
 
 VERSION = '1.4'
 __all__ = ['LcovCobertura']
+
 
 class LcovCobertura(object):
     """
@@ -96,7 +100,7 @@ class LcovCobertura(object):
                     coverage_data['summary']['branches-total'] += file_branches_total
                     coverage_data['summary']['branches-covered'] += file_branches_covered
 
-            line_parts = line.split(':',1)
+            line_parts = line.split(':', 1)
             input_type = line_parts[0]
 
             if input_type == 'SF':
@@ -246,7 +250,7 @@ class LcovCobertura(object):
                 for method_name, hits in list(class_data['methods'].items()):
                     method_el = self._el(document, 'method', {
                         'name': method_name,
-                        'signature' : '',
+                        'signature': '',
                         'hits': hits
                     })
                     methods_el.appendChild(method_el)
