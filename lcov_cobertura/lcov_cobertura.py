@@ -135,8 +135,11 @@ class LcovCobertura(object):
                     }
                 file_lines[line_number]['hits'] = line_hits
                 # Increment lines total/covered for class and package
-                if int(line_hits) > 0:
-                    file_lines_covered += 1
+                try:
+                    if int(line_hits) > 0:
+                        file_lines_covered += 1
+                except:
+                    pass
                 file_lines_total += 1
             elif input_type == 'BRDA':
                 # BRDA:1,1,2,0
