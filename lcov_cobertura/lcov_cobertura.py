@@ -16,7 +16,7 @@ import time
 from xml.dom import minidom
 from optparse import OptionParser
 
-VERSION = '1.4'
+VERSION = '1.5'
 __all__ = ['LcovCobertura']
 
 

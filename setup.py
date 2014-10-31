@@ -12,12 +12,12 @@ sys.path.append('lcov_cobertura')
 import lcov_cobertura
 
 setup(name='lcov_cobertura',
-    version='1.4',
+    version='1.5',
     description='LCOV to Cobertura XML converter',
     author='Eric Wendelin',
     author_email='me@eriwen.com',
-    url='http://eriwen.github.com/lcov-to-cobertura-xml/',
-    download_url='https://github.com/eriwen/lcov-to-cobertura-xml/downloads',
+    url='https://eriwen.github.com/lcov-to-cobertura-xml/',
+    download_url='https://raw.githubusercontent.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py',
     long_description=lcov_cobertura.LcovCobertura.__doc__,
     package_dir={'': 'lcov_cobertura'},
     provides=['lcov_cobertura'],
