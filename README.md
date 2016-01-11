@@ -42,7 +42,7 @@ from lcov_cobertura import LcovCobertura
 LCOV_INPUT = 'SF:foo/file.ext\nDA:1,1\nDA:2,0\nend_of_record\n'
 converter = LcovCobertura(LCOV_INPUT)
 cobertura_xml = converter.convert()
-print cobertura_xml
+print(cobertura_xml)
 ```
 
 ## Environment Support

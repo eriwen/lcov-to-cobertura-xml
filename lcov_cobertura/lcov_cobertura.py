@@ -30,7 +30,7 @@ class LcovCobertura(object):
     >>> LCOV_INPUT = 'your lcov input'
     >>> converter = LcovCobertura(LCOV_INPUT)
     >>> cobertura_xml = converter.convert()
-    >>> print cobertura_xml
+    >>> print(cobertura_xml)
     """
 
     def __init__(self, lcov_data, base_dir='.', excludes=None):
@@ -350,7 +350,7 @@ if __name__ == '__main__':
         (options, args) = parser.parse_args(args=argv)
 
         if len(args) != 2:
-            print((main.__doc__))
+            print(main.__doc__)
             sys.exit(1)
 
         try:
