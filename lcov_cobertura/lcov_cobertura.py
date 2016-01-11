@@ -13,11 +13,26 @@ import re
 import sys
 import os
 import time
+import subprocess
 from xml.dom import minidom
 from optparse import OptionParser
 
+from distutils.spawn import find_executable
+
+CPPFILT = "c++filt"
+HAVE_CPPFILT = False
+
+if find_executable(CPPFILT) is not None:
+    HAVE_CPPFILT = True
+
 VERSION = '1.5'
 __all__ = ['LcovCobertura']
+
+
+def demangle(name):
+    pipe = subprocess.Popen([CPPFILT, name], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    stdout, _ = pipe.communicate()
+    return stdout.split("\n")[0]
 
 
 class LcovCobertura(object):
@@ -33,7 +48,7 @@ class LcovCobertura(object):
     >>> print(cobertura_xml)
     """
 
-    def __init__(self, lcov_data, base_dir='.', excludes=None):
+    def __init__(self, lcov_data, base_dir='.', excludes=None, demangle=False):
         """
         Create a new :class:`LcovCobertura` object using the given `lcov_data`
         and `options`.
@@ -44,6 +59,8 @@ class LcovCobertura(object):
         :type base_dir: string
         :param excludes: list of regexes to packages as excluded
         :type excludes: [string]
+        :param demangle: whether to demangle function names using c++filt
+        :type demangle: bool
         """
 
         if not excludes:
@@ -51,6 +68,7 @@ class LcovCobertura(object):
         self.lcov_data = lcov_data
         self.base_dir = base_dir
         self.excludes = excludes
+        self.demangle = demangle
 
     def convert(self):
         """
@@ -253,7 +271,7 @@ class LcovCobertura(object):
                 methods_el = self._el(document, 'methods', {})
                 for method_name, (line, hits) in list(class_data['methods'].items()):
                     method_el = self._el(document, 'method', {
-                        'name': method_name,
+                        'name': demangle(method_name) if self.demangle else method_name,
                         'signature': '()V',
                         'line-rate': '1.0' if int(hits) > 0 else '0.0',
                         'branch-rate': '1.0' if int(hits) > 0 else '0.0',
@@ -349,7 +367,7 @@ if __name__ == '__main__':
         """
 
         parser = OptionParser()
-        parser.usage = 'lcov_cobertura.py lcov-file.dat [-b source/dir] [-e <exclude packages regex>] [-o output.xml]'
+        parser.usage = 'lcov_cobertura.py lcov-file.dat [-b source/dir] [-e <exclude packages regex>] [-o output.xml] [-d]'
         parser.description = 'Converts lcov output to cobertura-compatible XML'
         parser.add_option('-b', '--base-dir', action='store',
                           help='Directory where source files are located',
@@ -360,7 +378,13 @@ if __name__ == '__main__':
         parser.add_option('-o', '--output',
                           help='Path to store cobertura xml file',
                           action='store', dest='output', default='coverage.xml')
+        parser.add_option('-d', '--demangle',
+                          help='Demangle C++ function names using %s' % CPPFILT,
+                          action='store_true', dest='demangle', default=False)
         (options, args) = parser.parse_args(args=argv)
+
+        if options.demangle and not HAVE_CPPFILT:
+            raise RuntimeError("C++ filter executable (%s) not found!" % CPPFILT)
 
         if len(args) != 2:
             print(main.__doc__)
@@ -369,7 +393,7 @@ if __name__ == '__main__':
         try:
             with open(args[1], 'r') as lcov_file:
                 lcov_data = lcov_file.read()
-                lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes)
+                lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes, options.demangle)
                 cobertura_xml = lcov_cobertura.convert()
             with open(options.output, mode='wt') as output_file:
                 output_file.write(cobertura_xml)

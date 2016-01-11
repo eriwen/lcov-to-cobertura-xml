@@ -23,9 +23,10 @@ python lcov_cobertura.py lcov-file.dat
  - `-b/--base-dir` - (Optional) Directory where source files are located. Defaults to the current directory
  - `-e/--excludes` - (Optional) Comma-separated list of regexes of packages to exclude
  - `-o/--output` - (Optional) Path to store cobertura xml file. _Defaults to ./coverage.xml_
+ - `-d/--demangle` - (Optional) Demangle C++ function names. _Requires c++filt_
 
 ```bash
-python lcov_cobertura.py lcov-file.dat --base-dir src/dir --excludes test.lib --output build/coverage.xml
+python lcov_cobertura.py lcov-file.dat --base-dir src/dir --excludes test.lib --output build/coverage.xml --demangle
 ```
 
 ## Usage as a Python module
@@ -56,6 +57,7 @@ This project is made possible due to the efforts of these fine people:
  - [Eric Wendelin](http://eriwen.com)
  - [Björge Dijkstra](https://github.com/bjd)
  - [Jon Schewe](http://mtu.net/~jpschewe)
+ - [Yury V. Zaytsev](http://yury.zaytsev.net)
 
 ## License
 This project is provided under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
