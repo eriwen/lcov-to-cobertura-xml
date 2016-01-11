@@ -35,8 +35,8 @@ class Test(unittest.TestCase):
         self.assertEqual(result['packages']['foo']['line-rate'], '0.5')
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
         self.assertEqual(result['packages']['foo']['lines-total'], 2)
-        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['(anonymous_1)'], '1')
-        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['namedFn'], '0')
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['(anonymous_1)'], ['1', '1'])
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['namedFn'], ['2', '0'])
 
     def test_exclude_package_from_parser(self):
         converter = LcovCobertura(
@@ -59,8 +59,8 @@ class Test(unittest.TestCase):
                     'Bar': {'branches-covered': 1, 'lines-covered': 1,
                             'branches-total': 2,
                             'methods': {
-                                '(anonymous_1)': '1',
-                                'namedFn': '0'
+                                '(anonymous_1)': ['1', '1'],
+                                'namedFn': ['2', '0']
                             },
                             'lines': {
                                 1: {'hits': '1', 'branches-covered': 1,
@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
                                    'lines-covered': 1, 'lines-total': 2},
                        'timestamp': '1346815648000'}
         xml = converter.generate_cobertura_xml(parsed_lcov)
-        self.assertEqual(xml, '<?xml version="1.0" ?>\n<!DOCTYPE coverage\n  SYSTEM \'http://cobertura.sourceforge.net/xml/coverage-03.dtd\'>\n<coverage branch-rate="0.5" branches-covered="1" branches-valid="2" complexity="0" line-rate="0.5" lines-valid="2" timestamp="1346815648000" version="1.9">\n\t<sources>\n\t\t<source>.</source>\n\t</sources>\n\t<packages>\n\t\t<package branch-rate="0.5" line-rate="0.5" name="foo">\n\t\t\t<classes>\n\t\t\t\t<class branch-rate="0.5" complexity="0" filename="Bar" line-rate="0.5" name="file.ext">\n\t\t\t\t\t<methods>\n\t\t\t\t\t\t<method hits="0" name="namedFn" signature=""/>\n\t\t\t\t\t\t<method hits="1" name="(anonymous_1)" signature=""/>\n\t\t\t\t\t</methods>\n\t\t\t\t\t<lines>\n\t\t\t\t\t\t<line branch="true" condition-coverage="50% (1/2)" hits="1" number="1"/>\n\t\t\t\t\t\t<line branch="false" hits="0" number="2"/>\n\t\t\t\t\t</lines>\n\t\t\t\t</class>\n\t\t\t</classes>\n\t\t</package>\n\t</packages>\n</coverage>\n')
+        self.assertEqual(xml, '<?xml version="1.0" ?>\n<!DOCTYPE coverage\n  SYSTEM \'http://cobertura.sourceforge.net/xml/coverage-04.dtd\'>\n<coverage branch-rate="0.5" branches-covered="1" branches-valid="2" complexity="0" line-rate="0.5" lines-covered="1" lines-valid="2" timestamp="1346815648000" version="2.0.3">\n\t<sources>\n\t\t<source>.</source>\n\t</sources>\n\t<packages>\n\t\t<package branch-rate="0.5" complexity="0" line-rate="0.5" name="foo">\n\t\t\t<classes>\n\t\t\t\t<class branch-rate="0.5" complexity="0" filename="Bar" line-rate="0.5" name="file.ext">\n\t\t\t\t\t<methods>\n\t\t\t\t\t\t<method branch-rate="0.0" line-rate="0.0" name="namedFn" signature="()V">\n\t\t\t\t\t\t\t<lines>\n\t\t\t\t\t\t\t\t<line branch="false" hits="0" number="2"/>\n\t\t\t\t\t\t\t</lines>\n\t\t\t\t\t\t</method>\n\t\t\t\t\t\t<method branch-rate="1.0" line-rate="1.0" name="(anonymous_1)" signature="()V">\n\t\t\t\t\t\t\t<lines>\n\t\t\t\t\t\t\t\t<line branch="false" hits="1" number="1"/>\n\t\t\t\t\t\t\t</lines>\n\t\t\t\t\t\t</method>\n\t\t\t\t\t</methods>\n\t\t\t\t\t<lines>\n\t\t\t\t\t\t<line branch="true" condition-coverage="50% (1/2)" hits="1" number="1"/>\n\t\t\t\t\t\t<line branch="false" hits="0" number="2"/>\n\t\t\t\t\t</lines>\n\t\t\t\t</class>\n\t\t\t</classes>\n\t\t</package>\n\t</packages>\n</coverage>\n')
 
     def test_treat_non_integer_line_execution_count_as_zero(self):
         converter = LcovCobertura(
