@@ -272,7 +272,7 @@ class LcovCobertura(object):
                 for method_name, (line, hits) in list(class_data['methods'].items()):
                     method_el = self._el(document, 'method', {
                         'name': demangle(method_name) if self.demangle else method_name,
-                        'signature': '()V',
+                        'signature': '',
                         'line-rate': '1.0' if int(hits) > 0 else '0.0',
                         'branch-rate': '1.0' if int(hits) > 0 else '0.0',
                     })
