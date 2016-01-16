@@ -25,7 +25,7 @@ HAVE_CPPFILT = False
 if find_executable(CPPFILT) is not None:
     HAVE_CPPFILT = True
 
-VERSION = '1.5'
+VERSION = '1.6'
 __all__ = ['LcovCobertura']
 
 
