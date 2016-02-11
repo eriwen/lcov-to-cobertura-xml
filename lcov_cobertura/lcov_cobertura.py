@@ -133,10 +133,10 @@ class LcovCobertura(object):
                         'branches-total': 0, 'branches-covered': 0
                     }
                 coverage_data['packages'][package]['classes'][
-                relative_file_name] = {
-                    'name': class_name, 'lines': {}, 'lines-total': 0,
-                    'lines-covered': 0, 'branches-total': 0,
-                    'branches-covered': 0
+                    relative_file_name] = {
+                        'name': class_name, 'lines': {}, 'lines-total': 0,
+                        'lines-covered': 0, 'branches-total': 0,
+                        'branches-covered': 0
                 }
                 package = package
                 current_file = relative_file_name
@@ -367,7 +367,8 @@ if __name__ == '__main__':
         """
 
         parser = OptionParser()
-        parser.usage = 'lcov_cobertura.py lcov-file.dat [-b source/dir] [-e <exclude packages regex>] [-o output.xml] [-d]'
+        parser.usage = ('lcov_cobertura.py lcov-file.dat [-b source/dir] '
+                        '[-e <exclude packages regex>] [-o output.xml] [-d]')
         parser.description = 'Converts lcov output to cobertura-compatible XML'
         parser.add_option('-b', '--base-dir', action='store',
                           help='Directory where source files are located',
