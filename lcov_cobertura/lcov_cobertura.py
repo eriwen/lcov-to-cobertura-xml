@@ -29,10 +29,14 @@ VERSION = '1.6'
 __all__ = ['LcovCobertura']
 
 
-def demangle(name):
-    pipe = subprocess.Popen([CPPFILT, name], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    stdout, _ = pipe.communicate()
-    return stdout.split("\n")[0]
+class Demangler(object):
+    def __init__(self):
+        self.pipe = subprocess.Popen(
+            CPPFILT, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+
+    def demangle(self, name):
+        self.pipe.stdin.write(name + "\n")
+        return self.pipe.stdout.readline().rstrip()
 
 
 class LcovCobertura(object):
@@ -68,7 +72,11 @@ class LcovCobertura(object):
         self.lcov_data = lcov_data
         self.base_dir = base_dir
         self.excludes = excludes
-        self.demangle = demangle
+        if demangle:
+            demangler = Demangler()
+            self.format = demangler.demangle
+        else:
+            self.format = lambda x: x
 
     def convert(self):
         """
@@ -133,10 +141,10 @@ class LcovCobertura(object):
                         'branches-total': 0, 'branches-covered': 0
                     }
                 coverage_data['packages'][package]['classes'][
-                relative_file_name] = {
-                    'name': class_name, 'lines': {}, 'lines-total': 0,
-                    'lines-covered': 0, 'branches-total': 0,
-                    'branches-covered': 0
+                    relative_file_name] = {
+                        'name': class_name, 'lines': {}, 'lines-total': 0,
+                        'lines-covered': 0, 'branches-total': 0,
+                        'branches-covered': 0
                 }
                 package = package
                 current_file = relative_file_name
@@ -271,7 +279,7 @@ class LcovCobertura(object):
                 methods_el = self._el(document, 'methods', {})
                 for method_name, (line, hits) in list(class_data['methods'].items()):
                     method_el = self._el(document, 'method', {
-                        'name': demangle(method_name) if self.demangle else method_name,
+                        'name': self.format(method_name),
                         'signature': '',
                         'line-rate': '1.0' if int(hits) > 0 else '0.0',
                         'branch-rate': '1.0' if int(hits) > 0 else '0.0',
@@ -367,7 +375,8 @@ if __name__ == '__main__':
         """
 
         parser = OptionParser()
-        parser.usage = 'lcov_cobertura.py lcov-file.dat [-b source/dir] [-e <exclude packages regex>] [-o output.xml] [-d]'
+        parser.usage = ('lcov_cobertura.py lcov-file.dat [-b source/dir] '
+                        '[-e <exclude packages regex>] [-o output.xml] [-d]')
         parser.description = 'Converts lcov output to cobertura-compatible XML'
         parser.add_option('-b', '--base-dir', action='store',
                           help='Directory where source files are located',
