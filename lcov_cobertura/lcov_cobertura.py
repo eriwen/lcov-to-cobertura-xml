@@ -362,51 +362,53 @@ class LcovCobertura(object):
             return '0.0'
         return str(float(float(lines_covered) / float(lines_total)))
 
+
+def main(argv=None):
+    """
+    Converts LCOV coverage data to Cobertura-compatible XML for reporting.
+
+    Usage:
+        lcov_cobertura.py lcov-file.dat
+        lcov_cobertura.py lcov-file.dat -b src/dir -e test.lib -o path/out.xml
+
+    By default, XML output will be written to ./coverage.xml
+    """
+    if argv is None:
+        argv = sys.argv
+    parser = OptionParser()
+    parser.usage = ('lcov_cobertura.py lcov-file.dat [-b source/dir] '
+                    '[-e <exclude packages regex>] [-o output.xml] [-d]')
+    parser.description = 'Converts lcov output to cobertura-compatible XML'
+    parser.add_option('-b', '--base-dir', action='store',
+                      help='Directory where source files are located',
+                      dest='base_dir', default='.')
+    parser.add_option('-e', '--excludes',
+                      help='Comma-separated list of regexes of packages to exclude',
+                      action='append', dest='excludes', default=[])
+    parser.add_option('-o', '--output',
+                      help='Path to store cobertura xml file',
+                      action='store', dest='output', default='coverage.xml')
+    parser.add_option('-d', '--demangle',
+                      help='Demangle C++ function names using %s' % CPPFILT,
+                      action='store_true', dest='demangle', default=False)
+    (options, args) = parser.parse_args(args=argv)
+
+    if options.demangle and not HAVE_CPPFILT:
+        raise RuntimeError("C++ filter executable (%s) not found!" % CPPFILT)
+
+    if len(args) != 2:
+        print(main.__doc__)
+        sys.exit(1)
+
+    try:
+        with open(args[1], 'r') as lcov_file:
+            lcov_data = lcov_file.read()
+            lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes, options.demangle)
+            cobertura_xml = lcov_cobertura.convert()
+        with open(options.output, mode='wt') as output_file:
+            output_file.write(cobertura_xml)
+    except IOError:
+        sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
+
 if __name__ == '__main__':
-    def main(argv):
-        """
-        Converts LCOV coverage data to Cobertura-compatible XML for reporting.
-
-        Usage:
-            lcov_cobertura.py lcov-file.dat
-            lcov_cobertura.py lcov-file.dat -b src/dir -e test.lib -o path/out.xml
-
-        By default, XML output will be written to ./coverage.xml
-        """
-
-        parser = OptionParser()
-        parser.usage = ('lcov_cobertura.py lcov-file.dat [-b source/dir] '
-                        '[-e <exclude packages regex>] [-o output.xml] [-d]')
-        parser.description = 'Converts lcov output to cobertura-compatible XML'
-        parser.add_option('-b', '--base-dir', action='store',
-                          help='Directory where source files are located',
-                          dest='base_dir', default='.')
-        parser.add_option('-e', '--excludes',
-                          help='Comma-separated list of regexes of packages to exclude',
-                          action='append', dest='excludes', default=[])
-        parser.add_option('-o', '--output',
-                          help='Path to store cobertura xml file',
-                          action='store', dest='output', default='coverage.xml')
-        parser.add_option('-d', '--demangle',
-                          help='Demangle C++ function names using %s' % CPPFILT,
-                          action='store_true', dest='demangle', default=False)
-        (options, args) = parser.parse_args(args=argv)
-
-        if options.demangle and not HAVE_CPPFILT:
-            raise RuntimeError("C++ filter executable (%s) not found!" % CPPFILT)
-
-        if len(args) != 2:
-            print(main.__doc__)
-            sys.exit(1)
-
-        try:
-            with open(args[1], 'r') as lcov_file:
-                lcov_data = lcov_file.read()
-                lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes, options.demangle)
-                cobertura_xml = lcov_cobertura.convert()
-            with open(options.output, mode='wt') as output_file:
-                output_file.write(cobertura_xml)
-        except IOError:
-            sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
-
-    main(sys.argv)
+    main()
