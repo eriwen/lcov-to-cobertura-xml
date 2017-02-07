@@ -1,6 +1,6 @@
 # lcov to cobertura XML converter [![Build Status](https://secure.travis-ci.org/eriwen/lcov-to-cobertura-xml.png?branch=master)](http://travis-ci.org/eriwen/lcov-to-cobertura-xml)
 
-This project does as the name implies: it coverts code coverage report
+This project does as the name implies: it converts code coverage report
 files in [lcov](http://ltp.sourceforge.net/coverage/lcov.php) format to
 [Cobertura](http://cobertura.sourceforge.net/)'s XML report format so that
 CI servers like [Jenkins](http://jenkins-ci.org) can aggregate results and
