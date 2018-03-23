@@ -14,7 +14,7 @@ import sys
 import os
 import time
 import subprocess
-from xml.dom import minidom
+from xml.etree import cElementTree
 from optparse import OptionParser
 
 from distutils.spawn import find_executable
@@ -226,13 +226,8 @@ class LcovCobertura(object):
         :type coverage_data: dict
         """
 
-        dom_impl = minidom.getDOMImplementation()
-        doctype = dom_impl.createDocumentType("coverage", None,
-                                              "http://cobertura.sourceforge.net/xml/coverage-04.dtd")
-        document = dom_impl.createDocument(None, "coverage", doctype)
-        root = document.documentElement
         summary = coverage_data['summary']
-        self._attrs(root, {
+        root = cElementTree.Element('coverage', {
             'branch-rate': self._percent(summary['branches-total'],
                                          summary['branches-covered']),
             'branches-covered': str(summary['branches-covered']),
@@ -246,26 +241,23 @@ class LcovCobertura(object):
             'version': '2.0.3'
         })
 
-        sources = self._el(document, 'sources', {})
-        source = self._el(document, 'source', {})
-        source.appendChild(document.createTextNode(self.base_dir))
-        sources.appendChild(source)
+        sources = cElementTree.SubElement(root, 'sources')
+        source = cElementTree.SubElement(sources, 'source')
+        source.text = self.base_dir
 
-        root.appendChild(sources)
-
-        packages_el = self._el(document, 'packages', {})
+        packages_el = cElementTree.SubElement(root, 'packages')
 
         packages = coverage_data['packages']
         for package_name, package_data in list(packages.items()):
-            package_el = self._el(document, 'package', {
+            package_el = cElementTree.SubElement(packages_el, 'package', {
                 'line-rate': package_data['line-rate'],
                 'branch-rate': package_data['branch-rate'],
                 'name': package_name,
                 'complexity': '0',
             })
-            classes_el = self._el(document, 'classes', {})
+            classes_el = cElementTree.SubElement(package_el, 'classes')
             for class_name, class_data in list(package_data['classes'].items()):
-                class_el = self._el(document, 'class', {
+                class_el = cElementTree.SubElement(classes_el, 'class', {
                     'branch-rate': self._percent(class_data['branches-total'],
                                                  class_data['branches-covered']),
                     'complexity': '0',
@@ -276,51 +268,48 @@ class LcovCobertura(object):
                 })
 
                 # Process methods
-                methods_el = self._el(document, 'methods', {})
+                methods_el = cElementTree.SubElement(class_el, 'methods')
                 for method_name, (line, hits) in list(class_data['methods'].items()):
-                    method_el = self._el(document, 'method', {
+                    method_el = cElementTree.SubElement(methods_el, 'method', {
                         'name': self.format(method_name),
                         'signature': '',
                         'line-rate': '1.0' if int(hits) > 0 else '0.0',
                         'branch-rate': '1.0' if int(hits) > 0 else '0.0',
                     })
-                    method_lines_el = self._el(document, 'lines', {})
-                    method_line_el = self._el(document, 'line', {
+                    method_lines_el = cElementTree.SubElement(method_el, 'lines')
+                    cElementTree.SubElement(method_lines_el, 'line', {
                         'hits': hits,
                         'number': line,
                         'branch': 'false',
                     })
-                    method_lines_el.appendChild(method_line_el)
-                    method_el.appendChild(method_lines_el)
-                    methods_el.appendChild(method_el)
 
                 # Process lines
-                lines_el = self._el(document, 'lines', {})
+                lines_el = cElementTree.SubElement(class_el, 'lines')
                 lines = list(class_data['lines'].keys())
                 lines.sort()
                 for line_number in lines:
-                    line_el = self._el(document, 'line', {
-                        'branch': class_data['lines'][line_number]['branch'],
-                        'hits': str(class_data['lines'][line_number]['hits']),
-                        'number': str(line_number)
-                    })
                     if class_data['lines'][line_number]['branch'] == 'true':
                         total = int(class_data['lines'][line_number]['branches-total'])
                         covered = int(class_data['lines'][line_number]['branches-covered'])
                         percentage = int((covered * 100.0) / total)
-                        line_el.setAttribute('condition-coverage',
-                                             '{0}% ({1}/{2})'.format(
-                                                 percentage, covered, total))
-                    lines_el.appendChild(line_el)
+                        attr = {
+                            'branch': class_data['lines'][line_number]['branch'],
+                            'condition-coverage': '{0}% ({1}/{2})'.format(percentage, covered, total),
+                            'hits': str(class_data['lines'][line_number]['hits']),
+                            'number': str(line_number)
+                        }
+                    else:
+                        attr = {
+                            'branch': class_data['lines'][line_number]['branch'],
+                            'hits': str(class_data['lines'][line_number]['hits']),
+                            'number': str(line_number)
+                        }
+                    cElementTree.SubElement(lines_el, 'line', attr)
 
-                class_el.appendChild(methods_el)
-                class_el.appendChild(lines_el)
-                classes_el.appendChild(class_el)
-            package_el.appendChild(classes_el)
-            packages_el.appendChild(package_el)
-        root.appendChild(packages_el)
-
-        return document.toprettyxml()
+        doctype = """<!DOCTYPE coverage
+  SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>"""
+        xml_string = cElementTree.tostring(root, encoding='UTF-8')
+        return xml_string.replace('<coverage', doctype + '\n<coverage')
 
     def _el(self, document, name, attrs):
         """
