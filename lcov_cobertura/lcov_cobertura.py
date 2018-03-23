@@ -307,7 +307,7 @@ class LcovCobertura(object):
                     cElementTree.SubElement(lines_el, 'line', attr)
 
         doctype = """<!DOCTYPE coverage
-  SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>"""
+  SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">"""
         xml_string = cElementTree.tostring(root, encoding='UTF-8')
         return xml_string.replace('<coverage', doctype + '\n<coverage')
 
