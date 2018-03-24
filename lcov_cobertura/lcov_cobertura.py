@@ -306,37 +306,28 @@ class LcovCobertura(object):
                         }
                     cElementTree.SubElement(lines_el, 'line', attr)
 
-        doctype = """<!DOCTYPE coverage
-  SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">"""
-        xml_string = cElementTree.tostring(root, encoding='UTF-8')
-        return xml_string.replace('<coverage', doctype + '\n<coverage')
+        return self._tostring(root)
 
-    def _el(self, document, name, attrs):
+    def _tostring(self, document):
         """
-        Create an element within document with given name and attributes.
+        Convert xml element to a string.
 
-        :param document: Document element
-        :type document: Document
-        :param name: Element name
-        :type name: string
-        :param attrs: Attributes for element
-        :type attrs: dict
-        """
-        return self._attrs(document.createElement(name), attrs)
+        :param document: Object of cElementTree.Element to be converted
+        """ 
 
-    def _attrs(self, element, attrs):
-        """
-        Set attributes on given element.
+        header = """<?xml version=\'1.0\'?>
+<!DOCTYPE coverage
+  SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+"""
 
-        :param element: DOM Element
-        :type element: Element
-        :param attrs: Attributes for element
-        :type attrs: dict
-        """
-        for attr, val in list(attrs.items()):
-            element.setAttribute(attr, val)
-        return element
-
+        import sys
+        if sys.version_info[0] == 2:
+            xml_string = cElementTree.tostring(document)
+            return header + xml_string
+        else:
+            xml_string = cElementTree.tostring(document, encoding='unicode')
+            return header + xml_string
+        
     def _percent(self, lines_total, lines_covered):
         """
         Get the percentage of lines covered in the total, with formatting.
