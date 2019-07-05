@@ -115,12 +115,12 @@ class LcovCobertura(object):
                     package_dict['branches-total'] += file_branches_total
                     package_dict['branches-covered'] += file_branches_covered
                     file_dict = package_dict['classes'][current_file]
-                    file_dict['lines-total'] = file_lines_total
-                    file_dict['lines-covered'] = file_lines_covered
+                    file_dict['lines-total'] += file_lines_total
+                    file_dict['lines-covered'] += file_lines_covered
                     file_dict['lines'] = dict(file_lines)
                     file_dict['methods'] = dict(file_methods)
-                    file_dict['branches-total'] = file_branches_total
-                    file_dict['branches-covered'] = file_branches_covered
+                    file_dict['branches-total'] += file_branches_total
+                    file_dict['branches-covered'] += file_branches_covered
                     coverage_data['summary']['lines-total'] += file_lines_total
                     coverage_data['summary']['lines-covered'] += file_lines_covered
                     coverage_data['summary']['branches-total'] += file_branches_total
@@ -135,25 +135,36 @@ class LcovCobertura(object):
                 relative_file_name = os.path.relpath(file_name, self.base_dir)
                 package = '.'.join(relative_file_name.split(os.path.sep)[0:-1])
                 class_name = '.'.join(relative_file_name.split(os.path.sep))
+                package = package
+                current_file = relative_file_name
                 if package not in coverage_data['packages']:
                     coverage_data['packages'][package] = {
                         'classes': {}, 'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0
                     }
-                coverage_data['packages'][package]['classes'][
-                    relative_file_name] = {
-                        'name': class_name, 'lines': {}, 'lines-total': 0,
-                        'lines-covered': 0, 'branches-total': 0,
-                        'branches-covered': 0
-                }
-                package = package
-                current_file = relative_file_name
-                file_lines_total = 0
-                file_lines_covered = 0
-                file_lines.clear()
-                file_methods.clear()
-                file_branches_total = 0
-                file_branches_covered = 0
+                    
+                if 'classes' not in coverage_data['packages'][package] or relative_file_name not in coverage_data['packages'][package]['classes']:
+                    coverage_data['packages'][package]['classes'][
+                        relative_file_name] = {
+                            'name': class_name, 'lines': {}, 'lines-total': 0,
+                            'lines-covered': 0, 'branches-total': 0,
+                            'branches-covered': 0
+                    }
+                    file_lines_total = 0
+                    file_lines_covered = 0
+                    file_lines.clear()
+                    file_methods.clear()
+                    file_branches_total = 0
+                    file_branches_covered = 0
+                else:
+                    package_dict = coverage_data['packages'][package]
+                    file_dict = package_dict['classes'][current_file]
+                    file_lines_total = file_dict['lines-total']
+                    file_lines_covered = file_dict['lines-covered']
+                    file_lines = file_dict['lines']
+                    file_methods = file_dict['methods']
+                    file_branches_total = file_dict['branches-total']
+                    file_branches_covered = file_dict['branches-covered']
             elif input_type == 'DA':
                 # DA:2,0
                 (line_number, line_hits) = line_parts[-1].strip().split(',')
@@ -161,11 +172,11 @@ class LcovCobertura(object):
                 if line_number not in file_lines:
                     file_lines[line_number] = {
                         'branch': 'false', 'branches-total': 0,
-                        'branches-covered': 0
+                        'branches-covered': 0, 'hits': 0
                     }
-                file_lines[line_number]['hits'] = line_hits
-                # Increment lines total/covered for class and package
                 try:
+                    file_lines[line_number]['hits'] += int(line_hits)
+                    # Increment lines total/covered for class and package
                     if int(line_hits) > 0:
                         file_lines_covered += 1
                 except:
