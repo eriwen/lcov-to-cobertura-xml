@@ -35,8 +35,10 @@ class Demangler(object):
             CPPFILT, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
     def demangle(self, name):
-        self.pipe.stdin.write(name + "\n")
-        return self.pipe.stdout.readline().rstrip()
+        newname = name + "\n"
+        self.pipe.stdin.write(newname.encode('utf-8'))
+        res = self.pipe.stdout.readline()
+        return str(res.rstrip())
 
 
 class LcovCobertura(object):
