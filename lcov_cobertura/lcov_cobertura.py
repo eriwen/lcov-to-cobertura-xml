@@ -92,7 +92,7 @@ class LcovCobertura(object):
         coverage_data = self.parse()
         return self.generate_cobertura_xml(coverage_data)
 
-    def parse(self):
+    def parse(self, **kwargs):
         """
         Generate a data structure representing it that can be serialized in any
         logical format.
@@ -102,7 +102,7 @@ class LcovCobertura(object):
             'packages': {},
             'summary': {'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0},
-            'timestamp': str(int(time.time()))
+            'timestamp': str(kwargs["timestamp"]) if "timestamp" in kwargs else str(int(time.time()))
         }
         package = None
         current_file = None
