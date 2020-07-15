@@ -41,6 +41,10 @@ class Demangler(object):
         res = self.pipe.stdout.readline().decode('utf-8')
         return res.rstrip()
 
+    def __del__(self):
+        self.pipe.stdin.close()
+        self.pipe.terminate()
+        self.pipe.wait()
 
 class LcovCobertura(object):
     """
