@@ -221,7 +221,7 @@ class LcovCobertura(object):
 
         return coverage_data
 
-    def generate_cobertura_xml(self, coverage_data):
+    def generate_cobertura_xml(self, coverage_data, **kwargs):
         """
         Given parsed coverage data, return a String cobertura XML representation.
 
@@ -323,7 +323,7 @@ class LcovCobertura(object):
             packages_el.appendChild(package_el)
         root.appendChild(packages_el)
 
-        return document.toprettyxml()
+        return document.toprettyxml(**kwargs)
 
     def _el(self, document, name, attrs):
         """
