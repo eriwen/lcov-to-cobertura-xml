@@ -117,5 +117,50 @@ class Test(unittest.TestCase):
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
         self.assertEqual(result['packages']['foo']['lines-total'], 2)
 
+    def test_demangle(self):
+        converter = LcovCobertura(
+            "TN:\nSF:foo/foo.cpp\nFN:3,_ZN3Foo6answerEv\nFNDA:1,_ZN3Foo6answerEv\nFN:8,_ZN3Foo3sqrEi\nFNDA:1,_ZN3Foo3sqrEi\nDA:3,1\nDA:5,1\nDA:8,1\nDA:10,1\nend_of_record",
+            demangle=True)
+        TEST_TIMESTAMP = 1594850794
+        TEST_XML = r"""<?xml version="1.0" ?>
+<!DOCTYPE coverage
+  SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>
+<coverage branch-rate="0.0" branches-covered="0" branches-valid="0" complexity="0" line-rate="1.0" lines-covered="4" lines-valid="4" timestamp="{}" version="2.0.3">
+    <sources>
+        <source>.</source>
+    </sources>
+    <packages>
+        <package line-rate="1.0" branch-rate="0.0" name="foo" complexity="0">
+            <classes>
+                <class branch-rate="0.0" complexity="0" filename="foo/foo.cpp" line-rate="1.0" name="foo.foo.cpp">
+                    <methods>
+                        <method name="Foo::answer()" signature="" line-rate="1.0" branch-rate="1.0">
+                            <lines>
+                                <line hits="1" number="3" branch="false"/>
+                            </lines>
+                        </method>
+                        <method name="Foo::sqr(int)" signature="" line-rate="1.0" branch-rate="1.0">
+                            <lines>
+                                <line hits="1" number="8" branch="false"/>
+                            </lines>
+                        </method>
+                    </methods>
+                    <lines>
+                        <line branch="false" hits="1" number="3"/>
+                        <line branch="false" hits="1" number="5"/>
+                        <line branch="false" hits="1" number="8"/>
+                        <line branch="false" hits="1" number="10"/>
+                    </lines>
+                </class>
+            </classes>
+        </package>
+    </packages>
+</coverage>
+""".format(TEST_TIMESTAMP)
+        result = converter.parse(timestamp=TEST_TIMESTAMP)
+        xml = converter.generate_cobertura_xml(result, indent="    ")
+
+        self.assertEqual(xml, TEST_XML)
+
 if __name__ == '__main__':
     unittest.main()
