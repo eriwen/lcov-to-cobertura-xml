@@ -37,8 +37,8 @@ class Demangler(object):
     def demangle(self, name):
         newname = name + "\n"
         self.pipe.stdin.write(newname.encode('utf-8'))
-        res = self.pipe.stdout.readline()
-        return str(res.rstrip())
+        res = self.pipe.stdout.readline().decode('utf-8')
+        return res.rstrip()
 
 
 class LcovCobertura(object):
