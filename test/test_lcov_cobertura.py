@@ -163,4 +163,4 @@ class Test(unittest.TestCase):
         self.assertEqual(xml, TEST_XML)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
