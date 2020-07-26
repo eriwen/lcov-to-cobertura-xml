@@ -37,6 +37,7 @@ class Demangler(object):
     def demangle(self, name):
         newname = name + "\n"
         self.pipe.stdin.write(newname.encode('utf-8'))
+        self.pipe.stdin.flush()
         res = self.pipe.stdout.readline().decode('utf-8')
         return res.rstrip()
 
