@@ -6,6 +6,7 @@
 # available in the accompanying LICENSE.txt file.
 
 import unittest
+from xmldiff import main as xmldiff
 
 from lcov_cobertura import LcovCobertura
 
@@ -108,7 +109,8 @@ class Test(unittest.TestCase):
                                    'lines-covered': 1, 'lines-total': 2},
                        'timestamp': '1346815648000'}
         xml = converter.generate_cobertura_xml(parsed_lcov, indent="    ")
-        self.assertEqual(xml, TEST_XML)
+        xml_diff = xmldiff.diff_texts(xml, TEST_XML)
+        self.assertEqual(len(xml_diff), 0)
 
     def test_treat_non_integer_line_execution_count_as_zero(self):
         converter = LcovCobertura(
@@ -159,8 +161,8 @@ class Test(unittest.TestCase):
 """.format(TEST_TIMESTAMP)
         result = converter.parse(timestamp=TEST_TIMESTAMP)
         xml = converter.generate_cobertura_xml(result, indent="    ")
-
-        self.assertEqual(xml, TEST_XML)
+        xml_diff = xmldiff.diff_texts(xml, TEST_XML)
+        self.assertEqual(len(xml_diff), 0)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

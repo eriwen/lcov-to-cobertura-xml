@@ -36,5 +36,8 @@ setup(name='lcov_cobertura',
     entry_points={
         'console_scripts': ['lcov_cobertura=lcov_cobertura:main']
     },
+    install_requires=[
+        'xmldiff'
+    ],
     license='Apache License, Version 2.0'
 )
