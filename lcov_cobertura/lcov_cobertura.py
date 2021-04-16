@@ -23,16 +23,12 @@ from distutils.spawn import find_executable
 __version__ = '2.0.1'
 
 CPPFILT = "c++filt"
-HAVE_CPPFILT = False
-
-if find_executable(CPPFILT) is not None:
-    HAVE_CPPFILT = True
 
 
-class Demangler():
-    def __init__(self):
+class Demangler(object):
+    def __init__(self, demangler):
         self.pipe = subprocess.Popen(  # nosec - not for untrusted input
-            [CPPFILT], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            [demangler], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
     def demangle(self, name):
         newname = name + "\n"
@@ -64,7 +60,8 @@ class LcovCobertura():
       ...
     """
 
-    def __init__(self, lcov_data, base_dir='.', excludes=None, demangle=False):
+    def __init__(self, lcov_data, base_dir='.', excludes=None,
+                 demangler=None):
         """
         Create a new :class:`LcovCobertura` object using the given `lcov_data`
         and `options`.
@@ -75,8 +72,8 @@ class LcovCobertura():
         :type base_dir: string
         :param excludes: list of regexes to packages as excluded
         :type excludes: [string]
-        :param demangle: whether to demangle function names using c++filt
-        :type demangle: bool
+        :param demangler: program to demangle function names, or None
+        :type demangler: string
         """
 
         if not excludes:
@@ -84,8 +81,8 @@ class LcovCobertura():
         self.lcov_data = lcov_data
         self.base_dir = base_dir
         self.excludes = excludes
-        if demangle:
-            demangler = Demangler()
+        if demangler:
+            demangler = Demangler(demangler)
             self.format = demangler.demangle
         else:
             self.format = lambda x: x
@@ -401,18 +398,25 @@ def main(argv=None):
                       help='Path to store cobertura xml file',
                       action='store', dest='output', default='coverage.xml')
     parser.add_option('-d', '--demangle',
-                      help='Demangle C++ function names using %s' % CPPFILT,
+                      help='Demangle function names using %s' % CPPFILT,
                       action='store_true', dest='demangle', default=False)
+    parser.add_option('-D', '--demangler',
+                      help='Demangle function names using DEMANGLER',
+                      action='store', dest='demangler', default=None)
     parser.add_option('-v', '--version',
                       help='Display version info',
                       action='store_true')
     (options, args) = parser.parse_args(args=argv)
 
-    if options.demangle and not HAVE_CPPFILT:
-        raise RuntimeError("C++ filter executable (%s) not found!" % CPPFILT)
     if options.version:
         print('[lcov_cobertura {}]'.format(__version__))
         sys.exit(0)
+
+    if options.demangle and options.demangler is None:
+            options.demangler = CPPFILT
+
+    if options.demangler and not find_executable(options.demangler):
+        raise RuntimeError("filter executable (%s) not found!" % options.demangler)
 
     if len(args) != 2:
         print(main.__doc__)
@@ -421,7 +425,7 @@ def main(argv=None):
     try:
         with open(args[1], 'r') as lcov_file:
             lcov_data = lcov_file.read()
-            lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes, options.demangle)
+            lcov_cobertura = LcovCobertura(lcov_data, options.base_dir, options.excludes, options.demangler)
             cobertura_xml = lcov_cobertura.convert()
         with open(options.output, mode='wt') as output_file:
             output_file.write(cobertura_xml)
