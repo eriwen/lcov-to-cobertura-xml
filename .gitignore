@@ -1,7 +1,10 @@
+MANIFEST
 .idea
 build
 dist
 *.pyc
 doc/html
 doc/_build
-
+.coverage
+coverage.xml
+lcov_cobertura.egg-info

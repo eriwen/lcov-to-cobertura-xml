@@ -8,7 +8,7 @@
 import unittest
 from xmldiff import main as xmldiff
 
-from lcov_cobertura import LcovCobertura
+from lcov_cobertura.lcov_cobertura import LcovCobertura
 
 class Test(unittest.TestCase):
     """Unit tests for lcov_cobertura."""

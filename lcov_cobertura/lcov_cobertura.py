@@ -19,17 +19,15 @@ from optparse import OptionParser
 
 from distutils.spawn import find_executable
 
+
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
 
 if find_executable(CPPFILT) is not None:
     HAVE_CPPFILT = True
 
-VERSION = '1.6'
-__all__ = ['LcovCobertura']
 
-
-class Demangler(object):
+class Demangler():
     def __init__(self):
         self.pipe = subprocess.Popen(
             CPPFILT, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -46,7 +44,8 @@ class Demangler(object):
         self.pipe.terminate()
         self.pipe.wait()
 
-class LcovCobertura(object):
+
+class LcovCobertura():
     """
     Converts code coverage report files in lcov format to Cobertura's XML
     report format so that CI servers like Jenkins can aggregate results and
@@ -175,7 +174,7 @@ class LcovCobertura(object):
                 try:
                     if int(line_hits) > 0:
                         file_lines_covered += 1
-                except:
+                except ValueError:
                     pass
                 file_lines_total += 1
             elif input_type == 'BRDA':
@@ -416,6 +415,7 @@ def main(argv=None):
             output_file.write(cobertura_xml)
     except IOError:
         sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
+
 
 if __name__ == '__main__':
     main()
