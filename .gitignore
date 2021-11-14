@@ -3,8 +3,14 @@ MANIFEST
 build
 dist
 *.pyc
+*.cache
+*.egg-info
+
 doc/html
 doc/_build
+docs/source/reference
+
 .coverage
 coverage.xml
+nosetests.xml
 lcov_cobertura.egg-info

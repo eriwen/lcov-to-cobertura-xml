@@ -14,11 +14,13 @@ import sys
 import os
 import time
 import subprocess
+
 from xml.dom import minidom
 from optparse import OptionParser
 
 from distutils.spawn import find_executable
 
+__version__ = '1.6'
 
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
@@ -56,6 +58,10 @@ class LcovCobertura():
     >>> converter = LcovCobertura(LCOV_INPUT)
     >>> cobertura_xml = converter.convert()
     >>> print(cobertura_xml)
+    <?xml version="1.0" ?>
+    <!DOCTYPE coverage
+      SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>
+      ...
     """
 
     def __init__(self, lcov_data, base_dir='.', excludes=None, demangle=False):
@@ -397,10 +403,16 @@ def main(argv=None):
     parser.add_option('-d', '--demangle',
                       help='Demangle C++ function names using %s' % CPPFILT,
                       action='store_true', dest='demangle', default=False)
+    parser.add_option('-v', '--version',
+                      help='Display version info',
+                      action='store_true')
     (options, args) = parser.parse_args(args=argv)
 
     if options.demangle and not HAVE_CPPFILT:
         raise RuntimeError("C++ filter executable (%s) not found!" % CPPFILT)
+    if options.version:
+        print('[lcov_cobertura {}]'.format(__version__))
+        sys.exit(0)
 
     if len(args) != 2:
         print(main.__doc__)

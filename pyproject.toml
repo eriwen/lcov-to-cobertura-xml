@@ -1,10 +1,25 @@
 [build-system]
-requires = ["setuptools>=40.8.0", "wheel"]
+requires = [
+    "setuptools >= 42",  # At least v42 of setuptools required!
+    "wheel"
+]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["test",]
+log_cli =  false
+doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE",]
+addopts = "--strict-markers"
+markers = "subscript"
 
 [tool.coverage.run]
 branch = true
 source = ["lcov_cobertura"]
+omit = [
+    "test",
+    ".tox",
+]
 
 [tool.coverage.paths]
 source = ["lcov_cobertura"]
