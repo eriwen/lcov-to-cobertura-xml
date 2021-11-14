@@ -71,6 +71,7 @@ jobs:
       - name: Generate changes file
         uses: sarnold/gitchangelog-action@master
         with:
+          config_file: .gitchangelog.rc
           github_token: ${{ secrets.GITHUB_TOKEN}}
 
       - name: Create release
@@ -82,7 +83,7 @@ jobs:
           tag_name: ${{ env.VERSION }}
           name: Release v${{ env.VERSION }}
           body_path: CHANGES.md
-          draft: true
+          draft: false
           prerelease: false
           files: |
-            dist/*
+            dist/*.whl
