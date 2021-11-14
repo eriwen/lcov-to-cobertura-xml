@@ -1,4 +1,11 @@
-# lcov to cobertura XML converter [![Build Status](https://secure.travis-ci.org/eriwen/lcov-to-cobertura-xml.png?branch=master)](http://travis-ci.org/eriwen/lcov-to-cobertura-xml)
+# lcov to cobertura XML converter
+
+[![CI](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/ci.yml/badge.svg)](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/ci.yml)
+[![Docs](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/sphinx.yml/badge.svg)](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/sphinx.yml)
+[![Security check - Bandit](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/bandit.yml/badge.svg)](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/bandit.yml)
+[![Release](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/release.yml/badge.svg)](https://github.com/sarnold/lcov-to-cobertura-xml/actions/workflows/release.yml)
+
+[![Build Status](https://secure.travis-ci.org/eriwen/lcov-to-cobertura-xml.png?branch=master)](http://travis-ci.org/eriwen/lcov-to-cobertura-xml)
 
 This project does as the name implies: it converts code coverage report
 files in [lcov](http://ltp.sourceforge.net/coverage/lcov.php) format to
