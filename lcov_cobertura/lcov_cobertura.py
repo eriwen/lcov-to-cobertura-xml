@@ -13,9 +13,9 @@ import re
 import sys
 import os
 import time
-import subprocess
+import subprocess  # nosec - not for untrusted input
 
-from xml.dom import minidom
+from xml.dom import minidom  # nosec - not for untrusted input
 from optparse import OptionParser
 
 from distutils.spawn import find_executable
@@ -31,8 +31,8 @@ if find_executable(CPPFILT) is not None:
 
 class Demangler():
     def __init__(self):
-        self.pipe = subprocess.Popen(
-            CPPFILT, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self.pipe = subprocess.Popen(  # nosec - not for untrusted input
+            [CPPFILT], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
     def demangle(self, name):
         newname = name + "\n"

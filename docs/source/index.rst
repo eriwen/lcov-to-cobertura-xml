@@ -4,7 +4,7 @@ Welcome to lcov_cobertura's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    reference/modules
 

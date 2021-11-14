@@ -13,11 +13,15 @@
 import os
 import sys
 
-#from lcov_cobertura import __version__
+import pkg_resources
 
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+# needs an extra path here for namespace module-not-a-package
+# otherwise apidoc generates empty stub pages
+sys.path.insert(0, os.path.abspath('../../lcov_cobertura'))
 
+__version__ = pkg_resources.get_distribution('lcov_cobertura').version
 
 # -- Project information -----------------------------------------------------
 
@@ -29,8 +33,8 @@ copyright = '2012, Eric Wendelin'
 author = 'Eric Wendelin'
 
 # The full version, including alpha/beta/rc tags
-#release = __version__
-release = '1.6'
+version = __version__
+release = version
 
 
 # -- General configuration ---------------------------------------------------
