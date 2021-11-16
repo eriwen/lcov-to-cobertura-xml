@@ -23,3 +23,16 @@ jobs:
       with:
         name: ApiDocsHTML
         path: "docs/_build/html/"
+
+    - name: set nojekyll for github
+      run: |
+        sudo touch docs/_build/html/.nojekyll
+
+    - name: Deploy docs to gh-pages
+      if: ${{ github.event_name == 'push' }}
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: docs/_build/html/
+        SINGLE_COMMIT: true
