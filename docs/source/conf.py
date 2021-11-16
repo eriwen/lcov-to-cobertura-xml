@@ -25,9 +25,6 @@ __version__ = pkg_resources.get_distribution('lcov_cobertura').version
 
 # -- Project information -----------------------------------------------------
 
-# The master toctree document.
-master_doc = 'index'
-
 project = 'lcov_cobertura'
 copyright = '2012, Eric Wendelin'
 author = 'Eric Wendelin'
@@ -49,10 +46,11 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
+    'recommonmark',
 ]
 
 apidoc_module_dir = '../../lcov_cobertura/'
-apidoc_output_dir = 'reference'
+apidoc_output_dir = 'api'
 apidoc_excluded_paths = ['test']
 apidoc_separate_modules = True
 

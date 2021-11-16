@@ -1,12 +1,12 @@
 Welcome to lcov_cobertura's documentation!
 ==========================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 4
+   :caption: Contents:
 
-   reference/modules
+   README.md
+   api/modules
 
 
 Indices and tables

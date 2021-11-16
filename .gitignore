@@ -6,9 +6,8 @@ dist
 *.cache
 *.egg-info
 
-doc/html
-doc/_build
-docs/source/reference
+docs/_build
+docs/source/api
 
 .coverage
 coverage.xml
