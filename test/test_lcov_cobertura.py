@@ -83,5 +83,16 @@ class Test(unittest.TestCase):
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
         self.assertEqual(result['packages']['foo']['lines-total'], 2)
 
+    def test_interior_commas_in_fn_parses(self):
+        converter = LcovCobertura(
+            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,(anonymous_1<foo, bar>)\nFN:2,namedFn\nFNDA:1,(anonymous_1<foo, bar>)\nend_of_record\n')
+        result = converter.parse()
+        self.assertEqual(result['packages']['foo']['line-rate'], '0.5')
+        self.assertEqual(result['packages']['foo']['lines-covered'], 1)
+        self.assertEqual(result['packages']['foo']['lines-total'], 2)
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['(anonymous_1<foo, bar>)'], ['1', '1'])
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['namedFn'], ['2', '0'])
+
+
 if __name__ == '__main__':
     unittest.main()
