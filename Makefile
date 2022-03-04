@@ -13,12 +13,12 @@ pypi: doc
 	$(PYTHON) setup.py bdist_wininst upload
 
 doc:
-	cd doc; $(MAKE) html
+	cd docs; $(MAKE) html
 
 test:
 	cd test; $(PYTHON) test_lcov_cobertura.py
 
 clean:
-	cd doc; $(MAKE) clean
+	cd docs; $(MAKE) clean
 	rm -rf dist build
 	rm -f $(SRCDIR)/*.pyc test/*.pyc setup.pyc MANIFEST
