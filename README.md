@@ -63,7 +63,7 @@ print(cobertura_xml)
 
 ## Environment Support
 
-Python 3.8+ is supported. The last release with Python 2.x support is 1.6. 
+Python 3.8+ is supported. The last release with Python 2.x support is [version 1.6](https://pypi.org/project/lcov_cobertura/1.6/). 
 
 ## Contributions
 This project is made possible due to the efforts of these fine people:
