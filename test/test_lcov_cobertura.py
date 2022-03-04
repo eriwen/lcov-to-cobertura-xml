@@ -124,7 +124,7 @@ class Test(unittest.TestCase):
         converter = LcovCobertura(
             'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,Foo<T,S>::try_read_output,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
         result = converter.parse()
-        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['Foo<T,S>::try_read_output,namedFn'], ['1', '1'])
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['Foo<T,S>::try_read_output,namedFn'], ['1', '0'])
 
     def test_demangle(self):
         converter = LcovCobertura(
