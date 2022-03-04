@@ -72,7 +72,7 @@ jobs:
         uses: sarnold/gitchangelog-action@master
         with:
           config_file: .gitchangelog.rc
-          github_token: ${{ secrets.GITHUB_TOKEN}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         id: create_release
