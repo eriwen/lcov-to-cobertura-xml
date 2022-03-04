@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2011-2012 Eric Wendelin
+# Copyright 2011-2022 Eric Wendelin
 #
 # This is free software, licensed under the Apache License, Version 2.0,
 # available in the accompanying LICENSE.txt file.
@@ -204,11 +204,11 @@ class LcovCobertura():
                 file_branches_covered = int(line_parts[1])
             elif input_type == 'FN':
                 # FN:5,(anonymous_1)
-                function_line, function_name = line_parts[-1].strip().split(',')
+                function_line, function_name = line_parts[-1].strip().split(',', 1)
                 file_methods[function_name] = [function_line, '0']
             elif input_type == 'FNDA':
                 # FNDA:0,(anonymous_1)
-                (function_hits, function_name) = line_parts[-1].strip().split(',')
+                (function_hits, function_name) = line_parts[-1].strip().split(',', 1)
                 if function_name not in file_methods:
                     file_methods[function_name] = ['0', '0']
                 file_methods[function_name][-1] = function_hits
