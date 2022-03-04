@@ -120,6 +120,12 @@ class Test(unittest.TestCase):
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
         self.assertEqual(result['packages']['foo']['lines-total'], 2)
 
+    def test_support_function_names_with_commas(self):
+        converter = LcovCobertura(
+            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,Foo<T,S>::try_read_output,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
+        result = converter.parse()
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['Foo<T,S>::try_read_output,namedFn'], ['1', '0'])
+
     def test_demangle(self):
         converter = LcovCobertura(
             "TN:\nSF:foo/foo.cpp\nFN:3,_ZN3Foo6answerEv\nFNDA:1,_ZN3Foo6answerEv\nFN:8,_ZN3Foo3sqrEi\nFNDA:1,_ZN3Foo3sqrEi\nDA:3,1\nDA:5,1\nDA:8,1\nDA:10,1\nend_of_record",
