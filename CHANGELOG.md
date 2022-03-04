@@ -1,6 +1,7 @@
 # Version 2.0.0
 
  - Drop support for Python 2.x
+ - Bug fixes
 
 # Version 1.6
 
