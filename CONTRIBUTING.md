@@ -8,4 +8,4 @@ When submitting pull requests, please do the following to make it easier to inco
 ## Testing
 You can run all tests by simply running `make test` from your favorite shell.
 
-Please make sure your tests run in Python 2.7 and Python 3.3.
+Please make sure your tests run on Python 3.8.
