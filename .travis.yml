@@ -1,5 +1,7 @@
 language: python
 python:
-  - "2.7"
+  - "2.7.18"
   - "3.8.4"
+install:
+  - pip install -e .
 script: make clean test

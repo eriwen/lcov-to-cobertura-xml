@@ -1,5 +1,5 @@
 export PYTHONPATH := $(realpath lcov_cobertura):$(PYTHONPATH)
-PYTHON=python
+PYTHON=python3
 SRCDIR=lcov_cobertura
 
 .PHONY: doc release pypi clean test

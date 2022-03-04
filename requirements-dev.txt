@@ -1,0 +1,11 @@
+# python development/tools requirements file
+pre-commit
+pylint
+bandit
+flake8
+pycodestyle
+pytest
+xmldiff
+pytest-cov
+coverage
+coverage_python_version

@@ -6,8 +6,10 @@
 # available in the accompanying LICENSE.txt file.
 
 import unittest
+from xmldiff import main as xmldiff
 
 from lcov_cobertura import LcovCobertura
+
 
 class Test(unittest.TestCase):
     """Unit tests for lcov_cobertura."""
@@ -52,6 +54,40 @@ class Test(unittest.TestCase):
     def test_generate_cobertura_xml(self):
         converter = LcovCobertura(
             'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nBRDA:1,1,1,1\nBRDA:1,1,2,0\nFN:1,(anonymous_1)\nFN:2,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
+        TEST_XML = r"""<?xml version="1.0" ?>
+<!DOCTYPE coverage
+  SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>
+<coverage branch-rate="0.5" branches-covered="1" branches-valid="2" complexity="0" line-rate="0.5" lines-covered="1" lines-valid="2" timestamp="1346815648000" version="2.0.3">
+    <sources>
+        <source>.</source>
+    </sources>
+    <packages>
+        <package line-rate="0.5" branch-rate="0.5" name="foo" complexity="0">
+            <classes>
+                <class branch-rate="0.5" complexity="0" filename="Bar" line-rate="0.5" name="file.ext">
+                    <methods>
+                        <method name="(anonymous_1)" signature="" line-rate="1.0" branch-rate="1.0">
+                            <lines>
+                                <line hits="1" number="1" branch="false"/>
+                            </lines>
+                        </method>
+                        <method name="namedFn" signature="" line-rate="0.0" branch-rate="0.0">
+                            <lines>
+                                <line hits="0" number="2" branch="false"/>
+                            </lines>
+                        </method>
+                    </methods>
+                    <lines>
+                        <line branch="true" hits="1" number="1" condition-coverage="50% (1/2)"/>
+                        <line branch="false" hits="0" number="2"/>
+                    </lines>
+                </class>
+            </classes>
+        </package>
+    </packages>
+</coverage>
+"""
+
         parsed_lcov = {'packages': {
             'foo': {'branches-covered': 1, 'line-rate': '0.5', 'branch-rate': '0.5',
                     'lines-covered': 1, 'branches-total': 2, 'lines-total': 2,
@@ -73,8 +109,9 @@ class Test(unittest.TestCase):
                        'summary': {'branches-covered': 1, 'branches-total': 2,
                                    'lines-covered': 1, 'lines-total': 2},
                        'timestamp': '1346815648000'}
-        xml = converter.generate_cobertura_xml(parsed_lcov)
-        self.assertEqual(xml, '<?xml version="1.0" ?>\n<!DOCTYPE coverage\n  SYSTEM \'http://cobertura.sourceforge.net/xml/coverage-04.dtd\'>\n<coverage branch-rate="0.5" branches-covered="1" branches-valid="2" complexity="0" line-rate="0.5" lines-covered="1" lines-valid="2" timestamp="1346815648000" version="2.0.3">\n\t<sources>\n\t\t<source>.</source>\n\t</sources>\n\t<packages>\n\t\t<package branch-rate="0.5" complexity="0" line-rate="0.5" name="foo">\n\t\t\t<classes>\n\t\t\t\t<class branch-rate="0.5" complexity="0" filename="Bar" line-rate="0.5" name="file.ext">\n\t\t\t\t\t<methods>\n\t\t\t\t\t\t<method branch-rate="0.0" line-rate="0.0" name="namedFn" signature="">\n\t\t\t\t\t\t\t<lines>\n\t\t\t\t\t\t\t\t<line branch="false" hits="0" number="2"/>\n\t\t\t\t\t\t\t</lines>\n\t\t\t\t\t\t</method>\n\t\t\t\t\t\t<method branch-rate="1.0" line-rate="1.0" name="(anonymous_1)" signature="">\n\t\t\t\t\t\t\t<lines>\n\t\t\t\t\t\t\t\t<line branch="false" hits="1" number="1"/>\n\t\t\t\t\t\t\t</lines>\n\t\t\t\t\t\t</method>\n\t\t\t\t\t</methods>\n\t\t\t\t\t<lines>\n\t\t\t\t\t\t<line branch="true" condition-coverage="50% (1/2)" hits="1" number="1"/>\n\t\t\t\t\t\t<line branch="false" hits="0" number="2"/>\n\t\t\t\t\t</lines>\n\t\t\t\t</class>\n\t\t\t</classes>\n\t\t</package>\n\t</packages>\n</coverage>\n')
+        xml = converter.generate_cobertura_xml(parsed_lcov, indent="    ")
+        xml_diff = xmldiff.diff_texts(xml, TEST_XML)
+        self.assertEqual(len(xml_diff), 0)
 
     def test_treat_non_integer_line_execution_count_as_zero(self):
         converter = LcovCobertura(
@@ -83,5 +120,50 @@ class Test(unittest.TestCase):
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
         self.assertEqual(result['packages']['foo']['lines-total'], 2)
 
+    def test_demangle(self):
+        converter = LcovCobertura(
+            "TN:\nSF:foo/foo.cpp\nFN:3,_ZN3Foo6answerEv\nFNDA:1,_ZN3Foo6answerEv\nFN:8,_ZN3Foo3sqrEi\nFNDA:1,_ZN3Foo3sqrEi\nDA:3,1\nDA:5,1\nDA:8,1\nDA:10,1\nend_of_record",
+            demangle=True)
+        TEST_TIMESTAMP = 1594850794
+        TEST_XML = r"""<?xml version="1.0" ?>
+<!DOCTYPE coverage
+  SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>
+<coverage branch-rate="0.0" branches-covered="0" branches-valid="0" complexity="0" line-rate="1.0" lines-covered="4" lines-valid="4" timestamp="{}" version="2.0.3">
+    <sources>
+        <source>.</source>
+    </sources>
+    <packages>
+        <package line-rate="1.0" branch-rate="0.0" name="foo" complexity="0">
+            <classes>
+                <class branch-rate="0.0" complexity="0" filename="foo/foo.cpp" line-rate="1.0" name="foo.foo.cpp">
+                    <methods>
+                        <method name="Foo::answer()" signature="" line-rate="1.0" branch-rate="1.0">
+                            <lines>
+                                <line hits="1" number="3" branch="false"/>
+                            </lines>
+                        </method>
+                        <method name="Foo::sqr(int)" signature="" line-rate="1.0" branch-rate="1.0">
+                            <lines>
+                                <line hits="1" number="8" branch="false"/>
+                            </lines>
+                        </method>
+                    </methods>
+                    <lines>
+                        <line branch="false" hits="1" number="3"/>
+                        <line branch="false" hits="1" number="5"/>
+                        <line branch="false" hits="1" number="8"/>
+                        <line branch="false" hits="1" number="10"/>
+                    </lines>
+                </class>
+            </classes>
+        </package>
+    </packages>
+</coverage>
+""".format(TEST_TIMESTAMP)
+        result = converter.parse(timestamp=TEST_TIMESTAMP)
+        xml = converter.generate_cobertura_xml(result, indent="    ")
+        xml_diff = xmldiff.diff_texts(xml, TEST_XML)
+        self.assertEqual(len(xml_diff), 0)
+
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
