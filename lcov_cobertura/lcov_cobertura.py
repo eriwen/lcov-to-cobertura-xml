@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2011-2012 Eric Wendelin
+# Copyright 2011-2022 Eric Wendelin
 #
 # This is free software, licensed under the Apache License, Version 2.0,
 # available in the accompanying LICENSE.txt file.
@@ -13,11 +13,13 @@ import re
 import sys
 import os
 import time
-import subprocess
+import subprocess  # nosec - not for untrusted input
 from xml.etree import cElementTree
 from optparse import OptionParser
 
 from distutils.spawn import find_executable
+
+__version__ = '2.0.1'
 
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
@@ -25,21 +27,26 @@ HAVE_CPPFILT = False
 if find_executable(CPPFILT) is not None:
     HAVE_CPPFILT = True
 
-VERSION = '1.6'
-__all__ = ['LcovCobertura']
 
-
-class Demangler(object):
+class Demangler():
     def __init__(self):
-        self.pipe = subprocess.Popen(
-            CPPFILT, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self.pipe = subprocess.Popen(  # nosec - not for untrusted input
+            [CPPFILT], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
     def demangle(self, name):
-        self.pipe.stdin.write(name + "\n")
-        return self.pipe.stdout.readline().rstrip()
+        newname = name + "\n"
+        self.pipe.stdin.write(newname.encode('utf-8'))
+        self.pipe.stdin.flush()
+        res = self.pipe.stdout.readline().decode('utf-8')
+        return res.rstrip()
+
+    def __del__(self):
+        self.pipe.stdin.close()
+        self.pipe.terminate()
+        self.pipe.wait()
 
 
-class LcovCobertura(object):
+class LcovCobertura():
     """
     Converts code coverage report files in lcov format to Cobertura's XML
     report format so that CI servers like Jenkins can aggregate results and
@@ -50,6 +57,10 @@ class LcovCobertura(object):
     >>> converter = LcovCobertura(LCOV_INPUT)
     >>> cobertura_xml = converter.convert()
     >>> print(cobertura_xml)
+    <?xml version="1.0" ?>
+    <!DOCTYPE coverage
+      SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>
+      ...
     """
 
     def __init__(self, lcov_data, base_dir='.', excludes=None, demangle=False):
@@ -85,7 +96,7 @@ class LcovCobertura(object):
         coverage_data = self.parse()
         return self.generate_cobertura_xml(coverage_data)
 
-    def parse(self):
+    def parse(self, **kwargs):
         """
         Generate a data structure representing it that can be serialized in any
         logical format.
@@ -95,7 +106,7 @@ class LcovCobertura(object):
             'packages': {},
             'summary': {'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0},
-            'timestamp': str(int(time.time()))
+            'timestamp': str(kwargs["timestamp"]) if "timestamp" in kwargs else str(int(time.time()))
         }
         package = None
         current_file = None
@@ -168,7 +179,7 @@ class LcovCobertura(object):
                 try:
                     if int(line_hits) > 0:
                         file_lines_covered += 1
-                except:
+                except ValueError:
                     pass
                 file_lines_total += 1
             elif input_type == 'BRDA':
@@ -192,11 +203,11 @@ class LcovCobertura(object):
                 file_branches_covered = int(line_parts[1])
             elif input_type == 'FN':
                 # FN:5,(anonymous_1)
-                function_line, function_name = line_parts[-1].strip().split(',')
+                function_line, function_name = line_parts[-1].strip().split(',', 1)
                 file_methods[function_name] = [function_line, '0']
             elif input_type == 'FNDA':
                 # FNDA:0,(anonymous_1)
-                (function_hits, function_name) = line_parts[-1].strip().split(',')
+                (function_hits, function_name) = line_parts[-1].strip().split(',', 1)
                 if function_name not in file_methods:
                     file_methods[function_name] = ['0', '0']
                 file_methods[function_name][-1] = function_hits
@@ -218,7 +229,7 @@ class LcovCobertura(object):
 
         return coverage_data
 
-    def generate_cobertura_xml(self, coverage_data):
+    def generate_cobertura_xml(self, coverage_data, **kwargs):
         """
         Given parsed coverage data, return a String cobertura XML representation.
 
@@ -371,10 +382,16 @@ def main(argv=None):
     parser.add_option('-d', '--demangle',
                       help='Demangle C++ function names using %s' % CPPFILT,
                       action='store_true', dest='demangle', default=False)
+    parser.add_option('-v', '--version',
+                      help='Display version info',
+                      action='store_true')
     (options, args) = parser.parse_args(args=argv)
 
     if options.demangle and not HAVE_CPPFILT:
         raise RuntimeError("C++ filter executable (%s) not found!" % CPPFILT)
+    if options.version:
+        print('[lcov_cobertura {}]'.format(__version__))
+        sys.exit(0)
 
     if len(args) != 2:
         print(main.__doc__)
@@ -389,6 +406,7 @@ def main(argv=None):
             output_file.write(cobertura_xml)
     except IOError:
         sys.stderr.write("Unable to convert %s to Cobertura XML" % args[1])
+
 
 if __name__ == '__main__':
     main()
