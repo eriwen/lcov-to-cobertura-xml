@@ -40,6 +40,22 @@ class Test(unittest.TestCase):
         self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['(anonymous_1)'], ['1', '1'])
         self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['namedFn'], ['2', '0'])
 
+    def test_parse_with_checksum(self):
+        converter = LcovCobertura(
+            'SF:foo/file.ext\nDA:1,1,dummychecksum\nDA:2,0,dummychecksum\nBRDA:1,1,1,1\nBRDA:1,1,2,0\nend_of_record\n')
+        result = converter.parse()
+        self.assertTrue('packages' in result)
+        self.assertTrue('foo' in result['packages'])
+        self.assertEqual(result['packages']['foo']['branches-covered'], 1)
+        self.assertEqual(result['packages']['foo']['branches-total'], 2)
+        self.assertEqual(result['packages']['foo']['branch-rate'], '0.5')
+        self.assertEqual(result['packages']['foo']['line-rate'], '0.5')
+        self.assertEqual(result['packages']['foo']['lines-covered'], 1)
+        self.assertEqual(result['packages']['foo']['lines-total'], 2)
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['branches-covered'], 1)
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['branches-total'], 2)
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods'], {})
+
     def test_exclude_package_from_parser(self):
         converter = LcovCobertura(
             'SF:foo/file.ext\nDA:1,1\nDA:2,0\nend_of_record\nSF:bar/file.ext\nDA:1,1\nDA:2,1\nend_of_record\n',
