@@ -168,7 +168,7 @@ class LcovCobertura():
                 file_branches_covered = 0
             elif input_type == 'DA':
                 # DA:2,0
-                (line_number, line_hits) = line_parts[-1].strip().split(',')
+                (line_number, line_hits) = line_parts[-1].strip().split(',')[:2]
                 line_number = int(line_number)
                 if line_number not in file_lines:
                     file_lines[line_number] = {
