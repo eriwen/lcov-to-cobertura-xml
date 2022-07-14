@@ -6,6 +6,6 @@ When submitting pull requests, please do the following to make it easier to inco
 * Please keep code style consistent with surrounding code.
 
 ## Testing
-You can run all tests by simply running `make test` from your favorite shell.
+You can run all tests by simply running `pytest` from your favorite shell.
 
 Please make sure your tests run on Python 3.8.
