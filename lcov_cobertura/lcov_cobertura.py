@@ -20,7 +20,7 @@ from optparse import OptionParser
 
 from distutils.spawn import find_executable
 
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
