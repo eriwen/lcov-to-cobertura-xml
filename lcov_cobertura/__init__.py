@@ -1,0 +1,1 @@
+from lcov_cobertura.lcov_cobertura import LcovCobertura
