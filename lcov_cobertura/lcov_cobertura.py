@@ -205,13 +205,14 @@ class LcovCobertura():
             elif input_type == 'FN':
                 # FN:5,(anonymous_1)
                 function_line, function_name = line_parts[-1].strip().split(',', 1)
-                file_methods[function_name] = [function_line, '0']
+                file_methods[self.format(function_name)] = [function_line, '0']
             elif input_type == 'FNDA':
                 # FNDA:0,(anonymous_1)
                 (function_hits, function_name) = line_parts[-1].strip().split(',', 1)
-                if function_name not in file_methods:
-                    file_methods[function_name] = ['0', '0']
-                file_methods[function_name][-1] = function_hits
+                demangled_fn_name = self.format(function_name)
+                if demangled_fn_name not in file_methods:
+                    file_methods[demangled_fn_name] = ['0', '0']
+                file_methods[demangled_fn_name][-1] += function_hits
 
         # Exclude packages
         excluded = [x for x in coverage_data['packages'] for e in self.excludes
@@ -291,7 +292,7 @@ class LcovCobertura():
                 methods_el = self._el(document, 'methods', {})
                 for method_name, (line, hits) in list(class_data['methods'].items()):
                     method_el = self._el(document, 'method', {
-                        'name': self.format(method_name),
+                        'name': method_name,
                         'signature': '',
                         'line-rate': '1.0' if int(hits) > 0 else '0.0',
                         'branch-rate': '1.0' if int(hits) > 0 else '0.0',
