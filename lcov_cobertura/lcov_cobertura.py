@@ -205,10 +205,12 @@ class LcovCobertura():
             elif input_type == 'FN':
                 # FN:5,(anonymous_1)
                 tokens = line_parts[-1].strip().split(',')
+                # support functions with commas
+                fname = ','.join(ch for ch in tokens if not ch.isdigit())
                 if (len(tokens) == 3):
-                  function_line, function_line_ends, function_name = tokens
+                  function_line, function_line_ends, function_name = tokens[:2] + [fname]
                 else:
-                  function_line, function_name = tokens
+                  function_line, function_name = tokens[:1] + [fname]
                 file_methods[function_name] = [function_line, '0']
             elif input_type == 'FNDA':
                 # FNDA:0,(anonymous_1)

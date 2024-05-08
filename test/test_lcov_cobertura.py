@@ -8,7 +8,7 @@
 import unittest
 from xmldiff import main as xmldiff
 
-from lcov_cobertura import LcovCobertura
+from lcov_cobertura.lcov_cobertura import LcovCobertura
 
 
 class Test(unittest.TestCase):
@@ -32,12 +32,13 @@ class Test(unittest.TestCase):
 
     def test_parse_with_functions(self):
         converter = LcovCobertura(
-            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,(anonymous_1)\nFN:2,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
+            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,(anonymous_1)\nFN:1,2,(anonymous_2)\nFN:2,namedFn\nFNDA:1,(anonymous_1)\nend_of_record\n')
         result = converter.parse()
         self.assertEqual(result['packages']['foo']['line-rate'], '0.5')
         self.assertEqual(result['packages']['foo']['lines-covered'], 1)
         self.assertEqual(result['packages']['foo']['lines-total'], 2)
         self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['(anonymous_1)'], ['1', '1'])
+        self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['(anonymous_2)'], ['1', '0'])
         self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['namedFn'], ['2', '0'])
 
     def test_parse_with_checksum(self):
@@ -138,7 +139,7 @@ class Test(unittest.TestCase):
 
     def test_support_function_names_with_commas(self):
         converter = LcovCobertura(
-            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,(anonymous_1<foo, bar>)\nFN:2,namedFn\nFNDA:1,(anonymous_1<foo, bar>)\nend_of_record\n')
+            'TN:\nSF:foo/file.ext\nDA:1,1\nDA:2,0\nFN:1,2,(anonymous_1<foo, bar>)\nFN:2,namedFn\nFNDA:1,(anonymous_1<foo, bar>)\nend_of_record\n')
         result = converter.parse()
         self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['(anonymous_1<foo, bar>)'], ['1', '1'])
         self.assertEqual(result['packages']['foo']['classes']['foo/file.ext']['methods']['namedFn'], ['2', '0'])
