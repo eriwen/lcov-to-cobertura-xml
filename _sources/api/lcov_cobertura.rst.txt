@@ -1,0 +1,17 @@
+lcov\_cobertura package
+=======================
+
+Submodules
+----------
+
+.. toctree::
+
+   lcov_cobertura.lcov_cobertura
+
+Module contents
+---------------
+
+.. automodule:: lcov_cobertura
+   :members:
+   :undoc-members:
+   :show-inheritance:

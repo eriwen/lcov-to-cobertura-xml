@@ -1,0 +1,7 @@
+lcov_cobertura
+==============
+
+.. toctree::
+   :maxdepth: 4
+
+   lcov_cobertura

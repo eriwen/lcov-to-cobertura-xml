@@ -1,0 +1,7 @@
+lcov\_cobertura.lcov\_cobertura module
+======================================
+
+.. automodule:: lcov_cobertura.lcov_cobertura
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lcov_cobertura &mdash; lcov_cobertura 2.0.2 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            lcov_cobertura
+          </a>
+              <div class="version">
+                2.0.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">lcov to cobertura XML converter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">lcov_cobertura</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">lcov_cobertura</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lcov_cobertura</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lcov_cobertura</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="c1"># Copyright 2011-2022 Eric Wendelin</span>
+<span class="c1">#</span>
+<span class="c1"># This is free software, licensed under the Apache License, Version 2.0,</span>
+<span class="c1"># available in the accompanying LICENSE.txt file.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Converts lcov line coverage output to Cobertura-compatible XML for CI</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># nosec - not for untrusted input</span>
+
+<span class="kn">from</span> <span class="nn">xml.dom</span> <span class="kn">import</span> <span class="n">minidom</span>  <span class="c1"># nosec - not for untrusted input</span>
+<span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">OptionParser</span>
+
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">which</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;2.0.2&#39;</span>
+
+<span class="n">CPPFILT</span> <span class="o">=</span> <span class="s2">&quot;c++filt&quot;</span>
+<span class="n">HAVE_CPPFILT</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">if</span> <span class="n">which</span><span class="p">(</span><span class="n">CPPFILT</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">HAVE_CPPFILT</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="Demangler"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.Demangler">[docs]</a><span class="k">class</span> <span class="nc">Demangler</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>  <span class="c1"># nosec - not for untrusted input</span>
+            <span class="p">[</span><span class="n">CPPFILT</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Demangler.demangle"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.Demangler.demangle">[docs]</a>    <span class="k">def</span> <span class="nf">demangle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">newname</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">newname</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="LcovCobertura"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura">[docs]</a><span class="k">class</span> <span class="nc">LcovCobertura</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts code coverage report files in lcov format to Cobertura&#39;s XML</span>
+<span class="sd">    report format so that CI servers like Jenkins can aggregate results and</span>
+<span class="sd">    determine build stability etc.</span>
+
+<span class="sd">    &gt;&gt;&gt; from lcov_cobertura import LcovCobertura</span>
+<span class="sd">    &gt;&gt;&gt; LCOV_INPUT = &#39;your lcov input&#39;</span>
+<span class="sd">    &gt;&gt;&gt; converter = LcovCobertura(LCOV_INPUT)</span>
+<span class="sd">    &gt;&gt;&gt; cobertura_xml = converter.convert()</span>
+<span class="sd">    &gt;&gt;&gt; print(cobertura_xml)</span>
+<span class="sd">    &lt;?xml version=&quot;1.0&quot; ?&gt;</span>
+<span class="sd">    &lt;!DOCTYPE coverage</span>
+<span class="sd">      SYSTEM &#39;http://cobertura.sourceforge.net/xml/coverage-04.dtd&#39;&gt;</span>
+<span class="sd">      ...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lcov_data</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">excludes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">demangle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new :class:`LcovCobertura` object using the given `lcov_data`</span>
+<span class="sd">        and `options`.</span>
+
+<span class="sd">        :param lcov_data: Path to LCOV data file</span>
+<span class="sd">        :type lcov_data: string</span>
+<span class="sd">        :param base_dir: Path upon which to base all sources</span>
+<span class="sd">        :type base_dir: string</span>
+<span class="sd">        :param excludes: list of regexes to packages as excluded</span>
+<span class="sd">        :type excludes: [string]</span>
+<span class="sd">        :param demangle: whether to demangle function names using c++filt</span>
+<span class="sd">        :type demangle: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">excludes</span><span class="p">:</span>
+            <span class="n">excludes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lcov_data</span> <span class="o">=</span> <span class="n">lcov_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">excludes</span> <span class="o">=</span> <span class="n">excludes</span>
+        <span class="k">if</span> <span class="n">demangle</span><span class="p">:</span>
+            <span class="n">demangler</span> <span class="o">=</span> <span class="n">Demangler</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">demangler</span><span class="o">.</span><span class="n">demangle</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+
+<div class="viewcode-block" id="LcovCobertura.convert"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert lcov file to cobertura XML using options from this instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coverage_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_cobertura_xml</span><span class="p">(</span><span class="n">coverage_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LcovCobertura.parse"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a data structure representing it that can be serialized in any</span>
+<span class="sd">        logical format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">coverage_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;packages&#39;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s1">&#39;summary&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;lines-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;lines-covered&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;branches-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;branches-covered&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="s2">&quot;timestamp&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+        <span class="p">}</span>
+        <span class="n">package</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">current_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">file_lines_total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">file_lines_covered</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">file_lines</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">file_methods</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">file_branches_total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">file_branches_covered</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lcov_data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;end_of_record&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">current_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">package_dict</span> <span class="o">=</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">][</span><span class="n">package</span><span class="p">]</span>
+                    <span class="n">package_dict</span><span class="p">[</span><span class="s1">&#39;lines-total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_lines_total</span>
+                    <span class="n">package_dict</span><span class="p">[</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_lines_covered</span>
+                    <span class="n">package_dict</span><span class="p">[</span><span class="s1">&#39;branches-total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_branches_total</span>
+                    <span class="n">package_dict</span><span class="p">[</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_branches_covered</span>
+                    <span class="n">file_dict</span> <span class="o">=</span> <span class="n">package_dict</span><span class="p">[</span><span class="s1">&#39;classes&#39;</span><span class="p">][</span><span class="n">current_file</span><span class="p">]</span>
+                    <span class="n">file_dict</span><span class="p">[</span><span class="s1">&#39;lines-total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_lines_total</span>
+                    <span class="n">file_dict</span><span class="p">[</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_lines_covered</span>
+                    <span class="n">file_dict</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
+                    <span class="n">file_dict</span><span class="p">[</span><span class="s1">&#39;methods&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">file_methods</span><span class="p">)</span>
+                    <span class="n">file_dict</span><span class="p">[</span><span class="s1">&#39;branches-total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_branches_total</span>
+                    <span class="n">file_dict</span><span class="p">[</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_branches_covered</span>
+                    <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;lines-total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_lines_total</span>
+                    <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_lines_covered</span>
+                    <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;branches-total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_branches_total</span>
+                    <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">file_branches_covered</span>
+
+            <span class="n">line_parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">input_type</span> <span class="o">=</span> <span class="n">line_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">input_type</span> <span class="o">==</span> <span class="s1">&#39;SF&#39;</span><span class="p">:</span>
+                <span class="c1"># Get file name</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="n">line_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">relative_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">)</span>
+                <span class="n">package</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">relative_file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">class_name</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">relative_file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">package</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">]:</span>
+                    <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">][</span><span class="n">package</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;classes&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;lines-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;lines-covered&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;branches-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;branches-covered&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                    <span class="p">}</span>
+                <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">][</span><span class="n">package</span><span class="p">][</span><span class="s1">&#39;classes&#39;</span><span class="p">][</span>
+                    <span class="n">relative_file_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="p">,</span> <span class="s1">&#39;lines&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;lines-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;lines-covered&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;branches-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;branches-covered&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                <span class="p">}</span>
+                <span class="n">package</span> <span class="o">=</span> <span class="n">package</span>
+                <span class="n">current_file</span> <span class="o">=</span> <span class="n">relative_file_name</span>
+                <span class="n">file_lines_total</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">file_lines_covered</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">file_lines</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">file_methods</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">file_branches_total</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">file_branches_covered</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="n">input_type</span> <span class="o">==</span> <span class="s1">&#39;DA&#39;</span><span class="p">:</span>
+                <span class="c1"># DA:2,0</span>
+                <span class="p">(</span><span class="n">line_number</span><span class="p">,</span> <span class="n">line_hits</span><span class="p">)</span> <span class="o">=</span> <span class="n">line_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">line_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line_number</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">line_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_lines</span><span class="p">:</span>
+                    <span class="n">file_lines</span><span class="p">[</span><span class="n">line_number</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="s1">&#39;false&#39;</span><span class="p">,</span> <span class="s1">&#39;branches-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;branches-covered&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                    <span class="p">}</span>
+                <span class="n">file_lines</span><span class="p">[</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">line_hits</span>
+                <span class="c1"># Increment lines total/covered for class and package</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">line_hits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">file_lines_covered</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="n">file_lines_total</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">input_type</span> <span class="o">==</span> <span class="s1">&#39;BRDA&#39;</span><span class="p">:</span>
+                <span class="c1"># BRDA:1,1,2,0</span>
+                <span class="p">(</span><span class="n">line_number</span><span class="p">,</span> <span class="n">block_number</span><span class="p">,</span> <span class="n">branch_number</span><span class="p">,</span> <span class="n">branch_hits</span><span class="p">)</span> <span class="o">=</span> <span class="n">line_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="n">line_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line_number</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">line_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_lines</span><span class="p">:</span>
+                    <span class="n">file_lines</span><span class="p">[</span><span class="n">line_number</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;branches-total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;branches-covered&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                    <span class="p">}</span>
+                <span class="n">file_lines</span><span class="p">[</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;branch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;true&#39;</span>
+                <span class="n">file_lines</span><span class="p">[</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;branches-total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">file_branches_total</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">branch_hits</span> <span class="o">!=</span> <span class="s1">&#39;-&#39;</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">branch_hits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">file_lines</span><span class="p">[</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">file_branches_covered</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">input_type</span> <span class="o">==</span> <span class="s1">&#39;BRF&#39;</span><span class="p">:</span>
+                <span class="n">file_branches_total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">input_type</span> <span class="o">==</span> <span class="s1">&#39;BRH&#39;</span><span class="p">:</span>
+                <span class="n">file_branches_covered</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">input_type</span> <span class="o">==</span> <span class="s1">&#39;FN&#39;</span><span class="p">:</span>
+                <span class="c1"># FN:5,(anonymous_1)</span>
+                <span class="n">function_line</span><span class="p">,</span> <span class="n">function_name</span> <span class="o">=</span> <span class="n">line_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">file_methods</span><span class="p">[</span><span class="n">function_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">function_line</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">input_type</span> <span class="o">==</span> <span class="s1">&#39;FNDA&#39;</span><span class="p">:</span>
+                <span class="c1"># FNDA:0,(anonymous_1)</span>
+                <span class="p">(</span><span class="n">function_hits</span><span class="p">,</span> <span class="n">function_name</span><span class="p">)</span> <span class="o">=</span> <span class="n">line_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">function_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_methods</span><span class="p">:</span>
+                    <span class="n">file_methods</span><span class="p">[</span><span class="n">function_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">]</span>
+                <span class="n">file_methods</span><span class="p">[</span><span class="n">function_name</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">function_hits</span>
+
+        <span class="c1"># Exclude packages</span>
+        <span class="n">excluded</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">excludes</span>
+                    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">x</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">package</span> <span class="ow">in</span> <span class="n">excluded</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">][</span><span class="n">package</span><span class="p">]</span>
+
+        <span class="c1"># Compute line coverage rates</span>
+        <span class="k">for</span> <span class="n">package_data</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;line-rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_percent</span><span class="p">(</span>
+                <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;lines-total&#39;</span><span class="p">],</span>
+                <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">])</span>
+            <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;branch-rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_percent</span><span class="p">(</span>
+                <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;branches-total&#39;</span><span class="p">],</span>
+                <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">coverage_data</span></div>
+
+<div class="viewcode-block" id="LcovCobertura.generate_cobertura_xml"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura.generate_cobertura_xml">[docs]</a>    <span class="k">def</span> <span class="nf">generate_cobertura_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coverage_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given parsed coverage data, return a String cobertura XML representation.</span>
+
+<span class="sd">        :param coverage_data: Nested dict representing coverage information.</span>
+<span class="sd">        :type coverage_data: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">dom_impl</span> <span class="o">=</span> <span class="n">minidom</span><span class="o">.</span><span class="n">getDOMImplementation</span><span class="p">()</span>
+        <span class="n">doctype</span> <span class="o">=</span> <span class="n">dom_impl</span><span class="o">.</span><span class="n">createDocumentType</span><span class="p">(</span><span class="s2">&quot;coverage&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                              <span class="s2">&quot;http://cobertura.sourceforge.net/xml/coverage-04.dtd&quot;</span><span class="p">)</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="n">dom_impl</span><span class="o">.</span><span class="n">createDocument</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">,</span> <span class="n">doctype</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">documentElement</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;branch-rate&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_percent</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;branches-total&#39;</span><span class="p">],</span>
+                                         <span class="n">summary</span><span class="p">[</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;branches-covered&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;branches-valid&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;branches-total&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;complexity&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;line-rate&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_percent</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;lines-total&#39;</span><span class="p">],</span>
+                                       <span class="n">summary</span><span class="p">[</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;lines-covered&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;lines-valid&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;lines-total&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;2.0.3&#39;</span>
+        <span class="p">})</span>
+
+        <span class="n">sources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">source</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">))</span>
+        <span class="n">sources</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+
+        <span class="n">root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+
+        <span class="n">packages_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;packages&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="n">packages</span> <span class="o">=</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;packages&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">package_name</span><span class="p">,</span> <span class="n">package_data</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">packages</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">package_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;package&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;line-rate&#39;</span><span class="p">:</span> <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;line-rate&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;branch-rate&#39;</span><span class="p">:</span> <span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;branch-rate&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">package_name</span><span class="p">,</span>
+                <span class="s1">&#39;complexity&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+            <span class="p">})</span>
+            <span class="n">classes_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;classes&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">for</span> <span class="n">class_name</span><span class="p">,</span> <span class="n">class_data</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">package_data</span><span class="p">[</span><span class="s1">&#39;classes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                <span class="n">class_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="s1">&#39;branch-rate&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_percent</span><span class="p">(</span><span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;branches-total&#39;</span><span class="p">],</span>
+                                                 <span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">]),</span>
+                    <span class="s1">&#39;complexity&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="p">,</span>
+                    <span class="s1">&#39;line-rate&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_percent</span><span class="p">(</span><span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines-total&#39;</span><span class="p">],</span>
+                                               <span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">]),</span>
+                    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="p">})</span>
+
+                <span class="c1"># Process methods</span>
+                <span class="n">methods_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;methods&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="k">for</span> <span class="n">method_name</span><span class="p">,</span> <span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">hits</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;methods&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                    <span class="n">method_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="p">{</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">method_name</span><span class="p">),</span>
+                        <span class="s1">&#39;signature&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;line-rate&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0&#39;</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;0.0&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;branch-rate&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0&#39;</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;0.0&#39;</span><span class="p">,</span>
+                    <span class="p">})</span>
+                    <span class="n">method_lines_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                    <span class="n">method_line_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;line&#39;</span><span class="p">,</span> <span class="p">{</span>
+                        <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="n">hits</span><span class="p">,</span>
+                        <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="n">line</span><span class="p">,</span>
+                        <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="s1">&#39;false&#39;</span><span class="p">,</span>
+                    <span class="p">})</span>
+                    <span class="n">method_lines_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">method_line_el</span><span class="p">)</span>
+                    <span class="n">method_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">method_lines_el</span><span class="p">)</span>
+                    <span class="n">methods_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">method_el</span><span class="p">)</span>
+
+                <span class="c1"># Process lines</span>
+                <span class="n">lines_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">line_number</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="n">line_el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;line&#39;</span><span class="p">,</span> <span class="p">{</span>
+                        <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">][</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;branch&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">][</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;hits&#39;</span><span class="p">]),</span>
+                        <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">line_number</span><span class="p">)</span>
+                    <span class="p">})</span>
+                    <span class="k">if</span> <span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">][</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;branch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>
+                        <span class="n">total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">][</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;branches-total&#39;</span><span class="p">])</span>
+                        <span class="n">covered</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">class_data</span><span class="p">[</span><span class="s1">&#39;lines&#39;</span><span class="p">][</span><span class="n">line_number</span><span class="p">][</span><span class="s1">&#39;branches-covered&#39;</span><span class="p">])</span>
+                        <span class="n">percentage</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">covered</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span>
+                        <span class="n">line_el</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;condition-coverage&#39;</span><span class="p">,</span>
+                                             <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">% (</span><span class="si">{1}</span><span class="s1">/</span><span class="si">{2}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                                 <span class="n">percentage</span><span class="p">,</span> <span class="n">covered</span><span class="p">,</span> <span class="n">total</span><span class="p">))</span>
+                    <span class="n">lines_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">line_el</span><span class="p">)</span>
+
+                <span class="n">class_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">methods_el</span><span class="p">)</span>
+                <span class="n">class_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">lines_el</span><span class="p">)</span>
+                <span class="n">classes_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">class_el</span><span class="p">)</span>
+            <span class="n">package_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">classes_el</span><span class="p">)</span>
+            <span class="n">packages_el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">package_el</span><span class="p">)</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">packages_el</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_el</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an element within document with given name and attributes.</span>
+
+<span class="sd">        :param document: Document element</span>
+<span class="sd">        :type document: Document</span>
+<span class="sd">        :param name: Element name</span>
+<span class="sd">        :type name: string</span>
+<span class="sd">        :param attrs: Attributes for element</span>
+<span class="sd">        :type attrs: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">attrs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set attributes on given element.</span>
+
+<span class="sd">        :param element: DOM Element</span>
+<span class="sd">        :type element: Element</span>
+<span class="sd">        :param attrs: Attributes for element</span>
+<span class="sd">        :type attrs: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">element</span>
+
+    <span class="k">def</span> <span class="nf">_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines_total</span><span class="p">,</span> <span class="n">lines_covered</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the percentage of lines covered in the total, with formatting.</span>
+
+<span class="sd">        :param lines_total: Total number of lines in given module</span>
+<span class="sd">        :type lines_total: number</span>
+<span class="sd">        :param lines_covered: Number of lines covered by tests in module</span>
+<span class="sd">        :type lines_covered: number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">lines_total</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;0.0&#39;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lines_covered</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">lines_total</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts LCOV coverage data to Cobertura-compatible XML for reporting.</span>
+
+<span class="sd">    Usage:</span>
+<span class="sd">        lcov_cobertura.py lcov-file.dat</span>
+<span class="sd">        lcov_cobertura.py lcov-file.dat -b src/dir -e test.lib -o path/out.xml</span>
+
+<span class="sd">    By default, XML output will be written to ./coverage.xml</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">argv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">OptionParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">usage</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;lcov_cobertura.py lcov-file.dat [-b source/dir] &#39;</span>
+                    <span class="s1">&#39;[-e &lt;exclude packages regex&gt;] [-o output.xml] [-d]&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Converts lcov output to cobertura-compatible XML&#39;</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;-b&#39;</span><span class="p">,</span> <span class="s1">&#39;--base-dir&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
+                      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Directory where source files are located&#39;</span><span class="p">,</span>
+                      <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;base_dir&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;-e&#39;</span><span class="p">,</span> <span class="s1">&#39;--excludes&#39;</span><span class="p">,</span>
+                      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Comma-separated list of regexes of packages to exclude&#39;</span><span class="p">,</span>
+                      <span class="n">action</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;excludes&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[])</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;--output&#39;</span><span class="p">,</span>
+                      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Path to store cobertura xml file&#39;</span><span class="p">,</span>
+                      <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;coverage.xml&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s1">&#39;--demangle&#39;</span><span class="p">,</span>
+                      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Demangle C++ function names using </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">CPPFILT</span><span class="p">,</span>
+                      <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;demangle&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span>
+                      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Display version info&#39;</span><span class="p">,</span>
+                      <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">demangle</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">HAVE_CPPFILT</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;C++ filter executable (</span><span class="si">%s</span><span class="s2">) not found!&quot;</span> <span class="o">%</span> <span class="n">CPPFILT</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">version</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[lcov_cobertura </span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">__version__</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">main</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lcov_file</span><span class="p">:</span>
+            <span class="n">lcov_data</span> <span class="o">=</span> <span class="n">lcov_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">lcov_cobertura</span> <span class="o">=</span> <span class="n">LcovCobertura</span><span class="p">(</span><span class="n">lcov_data</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">excludes</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">demangle</span><span class="p">)</span>
+            <span class="n">cobertura_xml</span> <span class="o">=</span> <span class="n">lcov_cobertura</span><span class="o">.</span><span class="n">convert</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_file</span><span class="p">:</span>
+            <span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">cobertura_xml</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Unable to convert </span><span class="si">%s</span><span class="s2"> to Cobertura XML&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
