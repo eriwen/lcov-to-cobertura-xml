@@ -152,20 +152,21 @@ class LcovCobertura():
                         'classes': {}, 'lines-total': 0, 'lines-covered': 0,
                         'branches-total': 0, 'branches-covered': 0
                     }
-                coverage_data['packages'][package]['classes'][
-                    relative_file_name] = {
-                        'name': class_name, 'lines': {}, 'lines-total': 0,
-                        'lines-covered': 0, 'branches-total': 0,
-                        'branches-covered': 0
-                }
+                if relative_file_name not in coverage_data['packages'][package]['classes']:
+                    coverage_data['packages'][package]['classes'][relative_file_name] = {
+                            'name': class_name, 'lines': {}, 'lines-total': 0,
+                            'lines-covered': 0, 'branches-total': 0,
+                            'branches-covered': 0, 'methods': {}
+                    }
                 package = package
                 current_file = relative_file_name
-                file_lines_total = 0
-                file_lines_covered = 0
-                file_lines.clear()
-                file_methods.clear()
-                file_branches_total = 0
-                file_branches_covered = 0
+                file_dict = coverage_data['packages'][package]['classes'][current_file]
+                file_lines_total = file_dict['lines-total']
+                file_lines_covered = file_dict['lines-covered']
+                file_lines = file_dict['lines']
+                file_methods = file_dict['methods']
+                file_branches_total = file_dict['branches-total']
+                file_branches_covered = file_dict['branches-covered']
             elif input_type == 'DA':
                 # DA:2,0
                 (line_number, line_hits) = line_parts[-1].strip().split(',')[:2]
@@ -173,13 +174,13 @@ class LcovCobertura():
                 if line_number not in file_lines:
                     file_lines[line_number] = {
                         'branch': 'false', 'branches-total': 0,
-                        'branches-covered': 0
+                        'branches-covered': 0, 'hits': 0
                     }
-                file_lines[line_number]['hits'] = line_hits
                 # Increment lines total/covered for class and package
                 try:
                     if int(line_hits) > 0:
                         file_lines_covered += 1
+                        file_lines[line_number]['hits'] += int(line_hits)
                 except ValueError:
                     pass
                 file_lines_total += 1
@@ -205,13 +206,16 @@ class LcovCobertura():
             elif input_type == 'FN':
                 # FN:5,(anonymous_1)
                 function_line, function_name = line_parts[-1].strip().split(',', 1)
-                file_methods[function_name] = [function_line, '0']
+                if function_name not in file_methods:
+                    file_methods[function_name] = [int(function_line), 0]
+                else:
+                    file_methods[function_name][0] = int(function_line)
             elif input_type == 'FNDA':
                 # FNDA:0,(anonymous_1)
                 (function_hits, function_name) = line_parts[-1].strip().split(',', 1)
                 if function_name not in file_methods:
-                    file_methods[function_name] = ['0', '0']
-                file_methods[function_name][-1] = function_hits
+                    file_methods[function_name] = [0, 0]
+                file_methods[function_name][-1] += int(function_hits)
 
         # Exclude packages
         excluded = [x for x in coverage_data['packages'] for e in self.excludes
@@ -293,13 +297,13 @@ class LcovCobertura():
                     method_el = self._el(document, 'method', {
                         'name': self.format(method_name),
                         'signature': '',
-                        'line-rate': '1.0' if int(hits) > 0 else '0.0',
-                        'branch-rate': '1.0' if int(hits) > 0 else '0.0',
+                        'line-rate': '1.0' if hits > 0 else '0.0',
+                        'branch-rate': '1.0' if hits > 0 else '0.0',
                     })
                     method_lines_el = self._el(document, 'lines', {})
                     method_line_el = self._el(document, 'line', {
-                        'hits': hits,
-                        'number': line,
+                        'hits': str(hits),
+                        'number': str(line),
                         'branch': 'false',
                     })
                     method_lines_el.appendChild(method_line_el)
