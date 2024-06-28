@@ -18,14 +18,14 @@ import subprocess  # nosec - not for untrusted input
 from xml.dom import minidom  # nosec - not for untrusted input
 from optparse import OptionParser
 
-from distutils.spawn import find_executable
+from shutil import which
 
 __version__ = '2.0.2'
 
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
 
-if find_executable(CPPFILT) is not None:
+if which(CPPFILT) is not None:
     HAVE_CPPFILT = True
 
 
