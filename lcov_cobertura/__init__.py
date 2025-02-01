@@ -2,7 +2,7 @@
 Coverage conversion tool to make lcov output compatible with tools that
 expect Cobertura/coverage.py format.
 """
+from lcov_cobertura.lcov_cobertura import LcovCobertura
 
-__description__ = "Converts lcov output to Cobertura-compatible XML for CI."
 
-__all__ = ["__description__"]
+__all__ = ["LcovCobertura"]

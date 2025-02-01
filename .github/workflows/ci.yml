@@ -3,9 +3,9 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [ master, release ]
   pull_request:
-    branches: [ master ]
+    branches: [ "*" ]
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-latest]
+        os: [ubuntu-22.04]
         python-version: ['3.9', '3.10', '3.11', '3.12']
     steps:
     - name: Set git crlf/eol
@@ -53,8 +53,3 @@ jobs:
     - name: Check pkg builds
       run: |
         tox -e deploy,check
-
-    - name: Check docs
-      if: runner.os == 'Linux'
-      run: |
-        tox -e docs

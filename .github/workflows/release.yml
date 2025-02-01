@@ -39,18 +39,18 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install tox tox-gh-actions
+        pip install tox
 
     - name: Build dist pkgs
       run: |
-        tox -e build
+        tox -e deploy
 
     - name: Upload artifacts
       if: matrix.python-version == 3.9 && runner.os == 'Linux'
       uses: actions/upload-artifact@v4
       with:
-        name: dist
-        path: ./dist/
+        name: packages
+        path: dist
 
   create_release:
     name: Create Release
@@ -74,13 +74,12 @@ jobs:
 
       - name: check artifacts
         run: |
-          ls -l dist/
+          ls -l packages/
 
       - name: Generate changes file
         uses: sarnold/gitchangelog-action@v1
         with:
-          config_file: .gitchangelog.rc
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN}}
 
       - name: Create release
         id: create_release
@@ -94,14 +93,14 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            dist/*.whl
+            packages/*
 
-      #- name: Publish a Python distribution to PyPI
-        #uses: pypa/gh-action-pypi-publish@release/v1
-        #with:
-          #user: __token__
-          #password: ${{ secrets.PYPI_API_TOKEN }}
-          #packages_dir: dist/
+      - name: Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: dist/
 
   docs:
     name: Release docs
@@ -124,7 +123,7 @@ jobs:
 
     - name: Build docs
       run: |
-        tox -e ldocs,docs
+        tox -e docs
 
     - uses: actions/upload-artifact@v4
       with:

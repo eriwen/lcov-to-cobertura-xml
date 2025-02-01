@@ -260,7 +260,7 @@ class LcovCobertura():
             'lines-covered': str(summary['lines-covered']),
             'lines-valid': str(summary['lines-total']),
             'timestamp': coverage_data['timestamp'],
-            'version': '2.0.3'
+            'version': '2.0.3',
         })
 
         sources = self._el(document, 'sources', {})

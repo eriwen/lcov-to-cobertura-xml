@@ -15,11 +15,19 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Builds docs using sphinx
-    - uses: ammaraskar/sphinx-action@master
+    - uses: actions/setup-python@v5
       with:
-        pre-build-command: "pip install .[doc]"
-        docs-folder: "docs/"
+        python-version: '3.11'
+
+    - name: Add python requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
+
+    - name: Build docs
+      run: |
+        # tox -e docs-lint
+        tox -e docs
 
     - uses: actions/upload-artifact@v4
       with:
