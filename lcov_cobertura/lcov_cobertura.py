@@ -20,7 +20,12 @@ from optparse import OptionParser
 
 from shutil import which
 
-__version__ = '2.0.2'
+if sys.version_info < (3, 8):
+    from importlib_metadata import version
+else:
+    from importlib.metadata import version
+
+__version__ = version('lcov_cobertura')
 
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
