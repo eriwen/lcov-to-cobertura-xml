@@ -100,7 +100,7 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          packages_dir: dist/
+          packages_dir: packages/
 
   docs:
     name: Release docs
