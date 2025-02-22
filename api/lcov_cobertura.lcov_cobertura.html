@@ -6,15 +6,15 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lcov_cobertura.lcov_cobertura module &mdash; lcov_cobertura 2.1.1.dev2+g85f51df documentation</title>
+  <title>lcov_cobertura.lcov_cobertura module &mdash; lcov_cobertura 2.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b1e5fded"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/documentation_options.js?v=841abef3"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -88,7 +88,7 @@
 <p>Converts lcov line coverage output to Cobertura-compatible XML for CI</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="lcov_cobertura.lcov_cobertura.Demangler">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lcov_cobertura.lcov_cobertura.</span></span><span class="sig-name descname"><span class="pre">Demangler</span></span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#Demangler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.lcov_cobertura.Demangler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lcov_cobertura.lcov_cobertura.</span></span><span class="sig-name descname"><span class="pre">Demangler</span></span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#Demangler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.lcov_cobertura.Demangler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="lcov_cobertura.lcov_cobertura.Demangler.demangle">
@@ -99,7 +99,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="lcov_cobertura.lcov_cobertura.LcovCobertura">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lcov_cobertura.lcov_cobertura.</span></span><span class="sig-name descname"><span class="pre">LcovCobertura</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lcov_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excludes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">demangle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#LcovCobertura"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.lcov_cobertura.LcovCobertura" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lcov_cobertura.lcov_cobertura.</span></span><span class="sig-name descname"><span class="pre">LcovCobertura</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lcov_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excludes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">demangle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#LcovCobertura"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.lcov_cobertura.LcovCobertura" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Converts code coverage report files in lcov format to Cobertura’s XML
 report format so that CI servers like Jenkins can aggregate results and

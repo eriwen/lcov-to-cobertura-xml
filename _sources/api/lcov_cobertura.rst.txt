@@ -14,5 +14,5 @@ Module contents
 
 .. automodule:: lcov_cobertura
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
