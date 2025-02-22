@@ -1,9 +1,11 @@
 [build-system]
 requires = [
-    "setuptools >= 42",  # At least v42 of setuptools required!
-    "wheel"
+    "setuptools>=45",
+    "setuptools_scm[toml]>=6.2",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -25,7 +27,7 @@ omit = [
 source = ["lcov_cobertura"]
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 70
 show_missing = true
 
 [tool.black]

@@ -3,9 +3,9 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [ master, release ]
   pull_request:
-    branches: [ master ]
+    branches: [ "*" ]
 
 jobs:
   build:
@@ -22,18 +22,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        os: [ubuntu-22.04]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     steps:
     - name: Set git crlf/eol
       run: |
         git config --global core.autocrlf false
         git config --global core.eol lf
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -51,8 +53,3 @@ jobs:
     - name: Check pkg builds
       run: |
         tox -e deploy,check
-
-    - name: Check docs
-      if: runner.os == 'Linux'
-      run: |
-        tox -e docs

@@ -20,7 +20,12 @@ from optparse import OptionParser
 
 from shutil import which
 
-__version__ = '2.0.2'
+if sys.version_info < (3, 8):
+    from importlib_metadata import version
+else:
+    from importlib.metadata import version
+
+__version__ = version('lcov_cobertura')
 
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
@@ -255,7 +260,7 @@ class LcovCobertura():
             'lines-covered': str(summary['lines-covered']),
             'lines-valid': str(summary['lines-total']),
             'timestamp': coverage_data['timestamp'],
-            'version': '2.0.3'
+            'version': '2.0.3',
         })
 
         sources = self._el(document, 'sources', {})

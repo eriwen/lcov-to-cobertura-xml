@@ -1,18 +1,23 @@
 name: Security check - Bandit
 
 on:
-  workflow_dispatch:
-  pull_request:
   push:
-    branches:
-      - master
+    branches: [ "*" ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    permissions:
+      checks: write  # for bandit-report-artifacts to publish the checks
+      contents: read  # for actions/checkout to fetch code
+      security-events: write  # for bandit-report-artifacts to upload results
+      actions: read  # only on private (maybe?) required to get the Action run status
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Run bandit
       uses: VCTLabs/bandit-report-artifacts@master

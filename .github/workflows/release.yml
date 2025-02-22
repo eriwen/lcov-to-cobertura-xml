@@ -18,8 +18,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-20.04]
-        python-version: [3.9]
+        os: [ubuntu-22.04]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
     - name: Set git crlf/eol
@@ -27,27 +27,30 @@ jobs:
         git config --global core.autocrlf false
         git config --global core.eol lf
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install tox tox-gh-actions
+        pip install tox
 
     - name: Build dist pkgs
       run: |
         tox -e deploy
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      if: matrix.python-version == 3.9 && runner.os == 'Linux'
+      uses: actions/upload-artifact@v4
       with:
-        name: dist
-        path: ./dist/
+        name: packages
+        path: dist
 
   create_release:
     name: Create Release
@@ -62,18 +65,21 @@ jobs:
           echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
           echo ${{ env.VERSION }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       # download all artifacts to project dir
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
+
+      - name: check artifacts
+        run: |
+          ls -l packages/
 
       - name: Generate changes file
-        uses: sarnold/gitchangelog-action@master
+        uses: sarnold/gitchangelog-action@v1
         with:
-          config_file: .gitchangelog.rc
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN}}
 
       - name: Create release
         id: create_release
@@ -87,7 +93,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            dist/*.whl
+            packages/*
 
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -95,3 +101,41 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages_dir: dist/
+
+  docs:
+    name: Release docs
+    needs: [create_release]
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Add python requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox
+
+    - name: Build docs
+      run: |
+        tox -e docs
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ApiDocsHTML
+        path: "docs/_build/html/"
+
+    - name: set nojekyll for github
+      run: |
+        sudo touch docs/_build/html/.nojekyll
+
+    - name: Deploy docs to gh-pages
+      if: ${{ github.event_name == 'push' }}
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: docs/_build/html/

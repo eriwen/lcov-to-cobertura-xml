@@ -8,18 +8,28 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v2
-
-    # Builds docs using sphinx
-    - uses: ammaraskar/sphinx-action@master
+    - uses: actions/checkout@v4
       with:
-        pre-build-command: "pip install .[doc]"
-        docs-folder: "docs/"
+        fetch-depth: 0
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Add python requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
+
+    - name: Build docs
+      run: |
+        # tox -e docs-lint
+        tox -e docs
+
+    - uses: actions/upload-artifact@v4
       with:
         name: ApiDocsHTML
         path: "docs/_build/html/"
@@ -30,9 +40,6 @@ jobs:
 
     - name: Deploy docs to gh-pages
       if: ${{ github.event_name == 'push' }}
-      uses: JamesIves/github-pages-deploy-action@3.7.1
+      uses: JamesIves/github-pages-deploy-action@v4
       with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BRANCH: gh-pages
-        FOLDER: docs/_build/html/
-        SINGLE_COMMIT: true
+        folder: docs/_build/html/
