@@ -1,20 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lcov_cobertura package &mdash; lcov_cobertura 2.0.2 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>lcov_cobertura package &mdash; lcov_cobertura 2.0.3.dev6+g02241ec documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f6253993"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -33,9 +34,6 @@
           <a href="../index.html" class="icon icon-home">
             lcov_cobertura
           </a>
-              <div class="version">
-                2.0.2
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -44,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../README.html">lcov to cobertura XML converter</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">lcov_cobertura</a><ul class="current">
@@ -53,7 +51,10 @@
 <li class="toctree-l4"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html">lcov_cobertura.lcov_cobertura module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-lcov_cobertura">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-lcov_cobertura">Module contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lcov_cobertura.LcovCobertura"><code class="docutils literal notranslate"><span class="pre">LcovCobertura</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -85,38 +86,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="lcov-cobertura-package">
-<h1>lcov_cobertura package<a class="headerlink" href="#lcov-cobertura-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+  <section id="lcov-cobertura-package">
+<h1>lcov_cobertura package<a class="headerlink" href="#lcov-cobertura-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html">lcov_cobertura.lcov_cobertura module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html">lcov_cobertura.lcov_cobertura module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.Demangler"><code class="docutils literal notranslate"><span class="pre">Demangler</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.Demangler.demangle"><code class="docutils literal notranslate"><span class="pre">Demangler.demangle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.LcovCobertura"><code class="docutils literal notranslate"><span class="pre">LcovCobertura</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.LcovCobertura.convert"><code class="docutils literal notranslate"><span class="pre">LcovCobertura.convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.LcovCobertura.generate_cobertura_xml"><code class="docutils literal notranslate"><span class="pre">LcovCobertura.generate_cobertura_xml()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.LcovCobertura.parse"><code class="docutils literal notranslate"><span class="pre">LcovCobertura.parse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
-</div>
-<div class="section" id="module-lcov_cobertura">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-lcov_cobertura" title="Permalink to this headline">¶</a></h2>
-<p>Converts lcov line coverage output to Cobertura-compatible XML for CI</p>
-<dl class="class">
-<dt id="lcov_cobertura.Demangler">
-<em class="property">class </em><code class="sig-prename descclassname">lcov_cobertura.</code><code class="sig-name descname">Demangler</code><a class="reference internal" href="../_modules/lcov_cobertura.html#Demangler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lcov_cobertura.Demangler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="lcov_cobertura.Demangler.demangle">
-<code class="sig-name descname">demangle</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura.html#Demangler.demangle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lcov_cobertura.Demangler.demangle" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="lcov_cobertura.LcovCobertura">
-<em class="property">class </em><code class="sig-prename descclassname">lcov_cobertura.</code><code class="sig-name descname">LcovCobertura</code><span class="sig-paren">(</span><em class="sig-param">lcov_data</em>, <em class="sig-param">base_dir='.'</em>, <em class="sig-param">excludes=None</em>, <em class="sig-param">demangle=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura.html#LcovCobertura"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="module-lcov_cobertura">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-lcov_cobertura" title="Link to this heading"></a></h2>
+<p>Coverage conversion tool to make lcov output compatible with tools that
+expect Cobertura/coverage.py format.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lcov_cobertura.LcovCobertura">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lcov_cobertura.</span></span><span class="sig-name descname"><span class="pre">LcovCobertura</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lcov_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excludes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">demangle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#LcovCobertura"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Converts code coverage report files in lcov format to Cobertura’s XML
 report format so that CI servers like Jenkins can aggregate results and
 determine build stability etc.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lcov_cobertura</span> <span class="kn">import</span> <span class="n">LcovCobertura</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lcov_cobertura</span><span class="w"> </span><span class="kn">import</span> <span class="n">LcovCobertura</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">LCOV_INPUT</span> <span class="o">=</span> <span class="s1">&#39;your lcov input&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span> <span class="o">=</span> <span class="n">LcovCobertura</span><span class="p">(</span><span class="n">LCOV_INPUT</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cobertura_xml</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">()</span>
@@ -127,46 +131,34 @@ determine build stability etc.</p>
 <span class="go">  ...</span>
 </pre></div>
 </div>
-<dl class="method">
-<dt id="lcov_cobertura.LcovCobertura.convert">
-<code class="sig-name descname">convert</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura.html#LcovCobertura.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura.convert" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="lcov_cobertura.LcovCobertura.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#LcovCobertura.convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura.convert" title="Link to this definition"></a></dt>
 <dd><p>Convert lcov file to cobertura XML using options from this instance.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="lcov_cobertura.LcovCobertura.generate_cobertura_xml">
-<code class="sig-name descname">generate_cobertura_xml</code><span class="sig-paren">(</span><em class="sig-param">coverage_data</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura.html#LcovCobertura.generate_cobertura_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura.generate_cobertura_xml" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="lcov_cobertura.LcovCobertura.generate_cobertura_xml">
+<span class="sig-name descname"><span class="pre">generate_cobertura_xml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coverage_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#LcovCobertura.generate_cobertura_xml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura.generate_cobertura_xml" title="Link to this definition"></a></dt>
 <dd><p>Given parsed coverage data, return a String cobertura XML representation.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>coverage_data</strong> (<em>dict</em>) – Nested dict representing coverage information.</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="lcov_cobertura.LcovCobertura.parse">
-<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura.html#LcovCobertura.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura.parse" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="lcov_cobertura.LcovCobertura.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura/lcov_cobertura.html#LcovCobertura.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lcov_cobertura.LcovCobertura.parse" title="Link to this definition"></a></dt>
 <dd><p>Generate a data structure representing it that can be serialized in any
 logical format.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="lcov_cobertura.main">
-<code class="sig-prename descclassname">lcov_cobertura.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param">argv=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lcov_cobertura.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lcov_cobertura.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts LCOV coverage data to Cobertura-compatible XML for reporting.</p>
-<dl class="simple">
-<dt>Usage:</dt><dd><p>lcov_cobertura.py lcov-file.dat
-lcov_cobertura.py lcov-file.dat -b src/dir -e test.lib -o path/out.xml</p>
-</dd>
-</dl>
-<p>By default, XML output will be written to ./coverage.xml</p>
-</dd></dl>
-
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

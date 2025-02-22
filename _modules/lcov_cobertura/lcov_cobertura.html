@@ -1,23 +1,23 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lcov_cobertura &mdash; lcov_cobertura 2.0.2 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>lcov_cobertura.lcov_cobertura &mdash; lcov_cobertura 2.0.3.dev6+g02241ec documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-    <script src="../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f6253993"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -28,24 +28,21 @@
 
           
           
-          <a href="../index.html" class="icon icon-home">
+          <a href="../../index.html" class="icon icon-home">
             lcov_cobertura
           </a>
-              <div class="version">
-                2.0.2
-              </div>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../README.html">lcov to cobertura XML converter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">lcov_cobertura</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">lcov to cobertura XML converter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">lcov_cobertura</a></li>
 </ul>
 
         </div>
@@ -54,16 +51,16 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">lcov_cobertura</a>
+          <a href="../../index.html">lcov_cobertura</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
-      <li class="breadcrumb-item active">lcov_cobertura</li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lcov_cobertura.lcov_cobertura</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -72,7 +69,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for lcov_cobertura</h1><div class="highlight"><pre>
+  <h1>Source code for lcov_cobertura.lcov_cobertura</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 
 <span class="c1"># Copyright 2011-2022 Eric Wendelin</span>
@@ -84,18 +81,23 @@
 <span class="sd">Converts lcov line coverage output to Cobertura-compatible XML for CI</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># nosec - not for untrusted input</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>  <span class="c1"># nosec - not for untrusted input</span>
 
-<span class="kn">from</span> <span class="nn">xml.dom</span> <span class="kn">import</span> <span class="n">minidom</span>  <span class="c1"># nosec - not for untrusted input</span>
-<span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">OptionParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xml.dom</span><span class="w"> </span><span class="kn">import</span> <span class="n">minidom</span>  <span class="c1"># nosec - not for untrusted input</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">optparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">OptionParser</span>
 
-<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">which</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shutil</span><span class="w"> </span><span class="kn">import</span> <span class="n">which</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;2.0.2&#39;</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">importlib_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="s1">&#39;lcov_cobertura&#39;</span><span class="p">)</span>
 
 <span class="n">CPPFILT</span> <span class="o">=</span> <span class="s2">&quot;c++filt&quot;</span>
 <span class="n">HAVE_CPPFILT</span> <span class="o">=</span> <span class="kc">False</span>
@@ -104,26 +106,34 @@
     <span class="n">HAVE_CPPFILT</span> <span class="o">=</span> <span class="kc">True</span>
 
 
-<div class="viewcode-block" id="Demangler"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.Demangler">[docs]</a><span class="k">class</span> <span class="nc">Demangler</span><span class="p">():</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Demangler">
+<a class="viewcode-back" href="../../api/lcov_cobertura.lcov_cobertura.html#lcov_cobertura.Demangler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Demangler</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>  <span class="c1"># nosec - not for untrusted input</span>
             <span class="p">[</span><span class="n">CPPFILT</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Demangler.demangle"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.Demangler.demangle">[docs]</a>    <span class="k">def</span> <span class="nf">demangle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="Demangler.demangle">
+<a class="viewcode-back" href="../../api/lcov_cobertura.lcov_cobertura.html#lcov_cobertura.Demangler.demangle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">demangle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="n">newname</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">newname</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="LcovCobertura"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura">[docs]</a><span class="k">class</span> <span class="nc">LcovCobertura</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LcovCobertura">
+<a class="viewcode-back" href="../../api/lcov_cobertura.lcov_cobertura.html#lcov_cobertura.LcovCobertura">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LcovCobertura</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts code coverage report files in lcov format to Cobertura&#39;s XML</span>
 <span class="sd">    report format so that CI servers like Jenkins can aggregate results and</span>
 <span class="sd">    determine build stability etc.</span>
@@ -139,8 +149,8 @@
 <span class="sd">      ...</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lcov_data</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">excludes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">demangle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lcov_data</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">excludes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">demangle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a new :class:`LcovCobertura` object using the given `lcov_data`</span>
 <span class="sd">        and `options`.</span>
 
@@ -165,15 +175,20 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
 
-<div class="viewcode-block" id="LcovCobertura.convert"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="LcovCobertura.convert">
+<a class="viewcode-back" href="../../api/lcov_cobertura.lcov_cobertura.html#lcov_cobertura.LcovCobertura.convert">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert lcov file to cobertura XML using options from this instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">coverage_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_cobertura_xml</span><span class="p">(</span><span class="n">coverage_data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LcovCobertura.parse"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LcovCobertura.parse">
+<a class="viewcode-back" href="../../api/lcov_cobertura.lcov_cobertura.html#lcov_cobertura.LcovCobertura.parse">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate a data structure representing it that can be serialized in any</span>
 <span class="sd">        logical format.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -305,8 +320,11 @@
 
         <span class="k">return</span> <span class="n">coverage_data</span></div>
 
-<div class="viewcode-block" id="LcovCobertura.generate_cobertura_xml"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.LcovCobertura.generate_cobertura_xml">[docs]</a>    <span class="k">def</span> <span class="nf">generate_cobertura_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coverage_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LcovCobertura.generate_cobertura_xml">
+<a class="viewcode-back" href="../../api/lcov_cobertura.lcov_cobertura.html#lcov_cobertura.LcovCobertura.generate_cobertura_xml">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_cobertura_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coverage_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given parsed coverage data, return a String cobertura XML representation.</span>
 
 <span class="sd">        :param coverage_data: Nested dict representing coverage information.</span>
@@ -330,7 +348,7 @@
             <span class="s1">&#39;lines-covered&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;lines-covered&#39;</span><span class="p">]),</span>
             <span class="s1">&#39;lines-valid&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;lines-total&#39;</span><span class="p">]),</span>
             <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">coverage_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;2.0.3&#39;</span>
+            <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;2.0.3&#39;</span><span class="p">,</span>
         <span class="p">})</span>
 
         <span class="n">sources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_el</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="p">{})</span>
@@ -409,8 +427,9 @@
 
         <span class="k">return</span> <span class="n">document</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_el</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_el</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create an element within document with given name and attributes.</span>
 
 <span class="sd">        :param document: Document element</span>
@@ -422,8 +441,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">attrs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set attributes on given element.</span>
 
 <span class="sd">        :param element: DOM Element</span>
@@ -435,8 +454,8 @@
             <span class="n">element</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">element</span>
 
-    <span class="k">def</span> <span class="nf">_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines_total</span><span class="p">,</span> <span class="n">lines_covered</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines_total</span><span class="p">,</span> <span class="n">lines_covered</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the percentage of lines covered in the total, with formatting.</span>
 
 <span class="sd">        :param lines_total: Total number of lines in given module</span>
@@ -450,8 +469,11 @@
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lines_covered</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">lines_total</span><span class="p">)))</span></div>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../api/lcov_cobertura.html#lcov_cobertura.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../api/lcov_cobertura.lcov_cobertura.html#lcov_cobertura.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts LCOV coverage data to Cobertura-compatible XML for reporting.</span>
 
 <span class="sd">    Usage:</span>
@@ -502,6 +524,7 @@
             <span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">cobertura_xml</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Unable to convert </span><span class="si">%s</span><span class="s2"> to Cobertura XML&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

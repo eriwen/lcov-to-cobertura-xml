@@ -5,6 +5,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    lcov_cobertura.lcov_cobertura
 
@@ -13,5 +14,5 @@ Module contents
 
 .. automodule:: lcov_cobertura
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

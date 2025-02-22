@@ -1,20 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lcov_cobertura &mdash; lcov_cobertura 2.0.2 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>lcov_cobertura &mdash; lcov_cobertura 2.0.3.dev6+g02241ec documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f6253993"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -33,9 +34,6 @@
           <a href="../index.html" class="icon icon-home">
             lcov_cobertura
           </a>
-              <div class="version">
-                2.0.2
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -44,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../README.html">lcov to cobertura XML converter</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">lcov_cobertura</a><ul>
@@ -77,21 +75,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="lcov-cobertura">
-<h1>lcov_cobertura<a class="headerlink" href="#lcov-cobertura" title="Permalink to this headline">¶</a></h1>
+  <section id="lcov-cobertura">
+<h1>lcov_cobertura<a class="headerlink" href="#lcov-cobertura" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="lcov_cobertura.html">lcov_cobertura package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="lcov_cobertura.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html">lcov_cobertura.lcov_cobertura module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html">lcov_cobertura.lcov_cobertura module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.Demangler"><code class="docutils literal notranslate"><span class="pre">Demangler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.LcovCobertura"><code class="docutils literal notranslate"><span class="pre">LcovCobertura</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lcov_cobertura.lcov_cobertura.html#lcov_cobertura.lcov_cobertura.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="lcov_cobertura.html#module-lcov_cobertura">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lcov_cobertura.html#module-lcov_cobertura">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lcov_cobertura.html#lcov_cobertura.LcovCobertura"><code class="docutils literal notranslate"><span class="pre">LcovCobertura</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lcov_cobertura.html#lcov_cobertura.LcovCobertura.convert"><code class="docutils literal notranslate"><span class="pre">LcovCobertura.convert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lcov_cobertura.html#lcov_cobertura.LcovCobertura.generate_cobertura_xml"><code class="docutils literal notranslate"><span class="pre">LcovCobertura.generate_cobertura_xml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="lcov_cobertura.html#lcov_cobertura.LcovCobertura.parse"><code class="docutils literal notranslate"><span class="pre">LcovCobertura.parse()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </div>
-</div>
+</section>
 
 
            </div>
