@@ -25,7 +25,11 @@ if sys.version_info < (3, 8):
 else:
     from importlib.metadata import version
 
-__version__ = version('lcov_cobertura')
+__version__ = "dev"
+try:
+    __version__ = version('lcov_cobertura')
+except Exception:
+    pass
 
 CPPFILT = "c++filt"
 HAVE_CPPFILT = False
